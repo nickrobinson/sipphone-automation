@@ -1,0 +1,7 @@
+*** Settings ***
+Library SipPhoneLibrary
+
+***Test Cases***
+	Setup Phone 	1001	10.10.10.2	admin	admin
+
+
