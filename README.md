@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/nickrobinson/sipphone-automation.png?branch=master)](https://travis-ci.org/nickrobinson/sipphone-automation)
+
 sipphone-automation
 ===================
 
