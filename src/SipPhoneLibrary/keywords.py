@@ -11,5 +11,6 @@ class PhoneKeywords(object):
 
 	def setup_phone(self, extension, ipaddr, username, password):
 		self.phones[extension] = (ipaddr, username, password)
+		self.builtin.log("Added Phone")
 
 	
