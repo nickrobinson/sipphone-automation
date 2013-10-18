@@ -9,7 +9,7 @@ class PhoneKeywords(object):
 		self.phones = {}
 		self.builtin = BuiltIn()
 
-	def setup_phone(extension, ipaddr, username, password):
+	def setup_phone(self, extension, ipaddr, username, password):
 		self.phones[extension] = (ipaddr, username, password)
 
 	
