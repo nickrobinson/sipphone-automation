@@ -2,6 +2,7 @@
 Library SipPhoneLibrary
 
 ***Test Cases***
+First Phone Test
 	Setup Phone 	1001	10.10.10.2	admin	admin
 
 
