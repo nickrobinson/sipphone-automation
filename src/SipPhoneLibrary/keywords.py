@@ -21,7 +21,7 @@ class PhoneKeywords(object):
 		self.phones[extension] = (ipaddr, username, password)
 		self.builtin.log("Added Phone")
 
-	def call_number(self, extenson, number):
+	def call_number(self, extension, number):
 		URL = BEGIN_REQUEST + "tel:\\" + number + END_REQUEST
 		self._send_request(self.phones[extension][0], URL)
 
@@ -50,7 +50,7 @@ class PhoneKeywords(object):
 		URL = BEGIN_REQUEST + "Key:DialPad" + digit + END_REQUEST
 		self._send_request(self.phones[extension][0], URL)
 
-	def press_hold(self, extenstion):
+	def press_hold(self, extension):
 		URL = BEGIN_REQUEST + "Key:Hold" + END_REQUEST
 		self._send_request(self.phones[extension][0], URL)
 
