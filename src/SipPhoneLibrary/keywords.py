@@ -14,7 +14,7 @@ class PhoneKeywords(object):
 		self.phones = {}
 		self.builtin = BuiltIn()
 
-	def _send_request(ipaddr, request):
+	def _send_request(self, ipaddr, request):
 		headers = { 'Content-Type' : 'application/x-com-polycom-spipx' }
 
 	def setup_phone(self, extension, ipaddr, username, password):
