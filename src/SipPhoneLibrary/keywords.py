@@ -19,7 +19,7 @@ class PhoneKeywords(object):
 		URL = "http://" + self.phones[extension][0] + "/push"
 		data = json.dumps(request)
 		auth = digest(self.phones[extension][1], self.phones[extension][2])
-		result=requests.post(URL, auth, verify=False, data, headers)
+		result = requests.post(URL, auth, verify=False, data, headers)
 
 	def setup_phone(self, extension, ipaddr, username, password):
 		self.phones[extension] = (ipaddr, username, password)
@@ -28,6 +28,7 @@ class PhoneKeywords(object):
 	def call_number(self, extension, number):
 		URL = BEGIN_REQUEST + "tel:\\" + number + END_REQUEST
 		self._send_request(extension, URL)
+		self.builtin.log("Called number" + number)
 
 	def max_volume(self, extension):
 		for i in range(10):
@@ -41,6 +42,7 @@ class PhoneKeywords(object):
 	def press_end_call(self, extension):
 		URL = BEGIN_REQUEST + "Key:Softkey2" + END_REQUEST
 		self._send_request(extension, URL)
+		self.builtin.log("Ended Call")
 
 	def press_dnd(self, extension):
 		URL = BEGIN_REQUEST + "Key:DoNotDisturb" + END_REQUEST
