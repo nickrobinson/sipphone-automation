@@ -23,4 +23,5 @@ class PhoneKeywords(object):
 		_sendRequest_(self.phones[extension][0], URL)		
 
 	def _sendRequest_(ipaddr, request):
+		headers = { 'Content-Type' : 'application/x-com-polycom-spipx' }
 			
