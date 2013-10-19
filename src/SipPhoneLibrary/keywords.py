@@ -57,4 +57,8 @@ class PhoneKeywords(object):
 	def mute_mic(self, extension):
 		URL = BEGIN_REQUEST + "Key:MicMute" + END_REQUEST
 		self._send_request(self.phones[extension][0], URL)
+
+	def press_line_key(self, extension, lineNumber):
+		URL = BEGIN_REQUEST + "Key:Line" + lineNumber + END_REQUEST
+		self._send_request(self.phones[extension][0], URL)
 			
