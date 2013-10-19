@@ -23,23 +23,23 @@ class PhoneKeywords(object):
 
 	def call_number(self, extenson, number):
 		URL = BEGIN_REQUEST + "tel:\\" + number + END_REQUEST
-		_send_request(self.phones[extension][0], URL)
+		self._send_request(self.phones[extension][0], URL)
 
 	def max_volume(self, extension):
 		URL = BEGIN_REQUEST + "Key:VolUp" + END_REQUEST
-		_send_request(self.phones[extension][0], URL)	
+		self._send_request(self.phones[extension][0], URL)	
 
 	def press_headset_key(self, extension):
 		URL = BEGIN_REQUEST + "Key:Headset" + END_REQUEST
-		_send_request(self.phones[extension][0], URL)
+		self._send_request(self.phones[extension][0], URL)
 
 	def press_end_call(self, extension):
 		URL = BEGIN_REQUEST + "Key:Softkey2" + END_REQUEST
-		_send_request(self.phones[extension][0], URL)
+		self._send_request(self.phones[extension][0], URL)
 
 	def press_dnd(self, extension):
 		URL = BEGIN_REQUEST + "Key:DoNotDisturb" + END_REQUEST
-		_send_request(self.phones[extension][0], URL)
+		self._send_request(self.phones[extension][0], URL)
 
 	def press_digit(self, extension, digit):
 		if digit == "*":
@@ -48,13 +48,13 @@ class PhoneKeywords(object):
 			digit = "Pound"
 
 		URL = BEGIN_REQUEST + "Key:DialPad" + digit + END_REQUEST
-		_send_request(self.phones[extension][0], URL)
+		self._send_request(self.phones[extension][0], URL)
 
 	def press_hold(self, extenstion):
 		URL = BEGIN_REQUEST + "Key:Hold" + END_REQUEST
-		_send_request(self.phones[extension][0], URL)
+		self._send_request(self.phones[extension][0], URL)
 
 	def mute_mic(self, extension):
 		URL = BEGIN_REQUEST + "Key:MicMute" + END_REQUEST
-		_send_request(self.phones[extension][0], URL)
+		self._send_request(self.phones[extension][0], URL)
 			
