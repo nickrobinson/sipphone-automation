@@ -42,28 +42,19 @@ class PhoneKeywords(object):
 		_send_request(self.phones[extension][0], URL)
 
 	def press_digit(self, extension, digit):
-		keyPressed = ""
-		if digit == 0:
-			keyPressed = "0"
-		elif digit == 1:
-			keyPressed = "1"
-		elif digit == 2:
-			keyPressed = "2"
-		elif digit == 3:
-			keyPressed = "3"
-		elif digit == 4:
-			keyPressed = "4"
-		elif digit == 5:
-			keyPressed = "5"
-		elif digit == 6:
-			keyPressed = "6"
-		elif digit == 7:
-			keyPressed = "7"
-		elif digit == 8:
-			keyPressed = "8"
-		elif digit == 9:
-			keyPressed = "9"
+		if digit == "*":
+			digit = "Star"
+		elif digit == "#":
+			digit = "Pound"
 
-		URL = BEGIN_REQUEST + "Key:DialPad" + keyPressed + END_REQUEST
+		URL = BEGIN_REQUEST + "Key:DialPad" + digit + END_REQUEST
+		_send_request(self.phones[extension][0], URL)
+
+	def press_hold(self, extenstion):
+		URL = BEGIN_REQUEST + "Key:Hold" + END_REQUEST
+		_send_request(self.phones[extension][0], URL)
+
+	def mute_mic(self, extension):
+		URL = BEGIN_REQUEST + "Key:MicMute" + END_REQUEST
 		_send_request(self.phones[extension][0], URL)
 			
