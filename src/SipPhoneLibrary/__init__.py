@@ -1,4 +1,4 @@
-from keywords import RequestsKeywords
+from keywords import PhoneKeywords
 from version import VERSION
 
 _version_ = VERSION

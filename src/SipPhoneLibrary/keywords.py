@@ -14,8 +14,9 @@ class PhoneKeywords(object):
 		self.phones = {}
 		self.builtin = BuiltIn()
 
-	def setup_phone(extension, ipaddr, username, password):
+	def setup_phone(self, extension, ipaddr, username, password):
 		self.phones[extension] = (ipaddr, username, password)
+		self.builtin.log("Added Phone")
 
 	def call_number(extenson, number):
 		URL = BEGIN_REQUEST + "tel:\\" + number + END_REQUEST
