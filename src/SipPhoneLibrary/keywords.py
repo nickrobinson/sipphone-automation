@@ -1,6 +1,7 @@
 import robot
 import urllib
 import urllib2
+import json
 
 BEGIN_REQUEST = "<PolycomIPPhone><Data priority=\"Critical\">"
 END_REQUEST = "</Data></PolycomIPPhone>"
