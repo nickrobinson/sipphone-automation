@@ -3,7 +3,7 @@ import urllib
 import urllib2
 import json
 import requests
-  from requests.auth import HTTPDigestAuth as digest
+from requests.auth import HTTPDigestAuth as digest
 
 BEGIN_REQUEST = "<PolycomIPPhone><Data priority=\"Critical\">"
 END_REQUEST = "</Data></PolycomIPPhone>"
