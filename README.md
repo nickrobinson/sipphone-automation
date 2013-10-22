@@ -15,4 +15,5 @@ In order for your Polycom phones to support this test you must add the following
 - apps.push.password=1234
 
 ## Installation
+This library has been added to the PyPi package system. Installation is as simple as entering the command below
 `pip install sipphone-automation`
