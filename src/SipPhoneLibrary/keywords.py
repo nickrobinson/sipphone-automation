@@ -51,6 +51,11 @@ class PhoneKeywords(object):
 		"""Press the headset key on the phone with the specified extension"""
 		URL = BEGIN_REQUEST + "Key:Headset" + END_REQUEST
 		self._send_request(extension, URL)
+		
+	def press_handsfree_key(self, extension):
+		"""Press the headset key on the phone with the specified extension"""
+		URL = BEGIN_REQUEST + "Key:Handsfree" + END_REQUEST
+		self._send_request(extension, URL)
 
 	def press_end_call(self, extension):
 		"""Press the end call key on the phone with the specified extension"""
