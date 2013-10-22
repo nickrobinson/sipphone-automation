@@ -34,8 +34,6 @@ setup(name         = 'sipphone-automation',
       package_data = {'SipPhoneLibrary': ['tests/*.txt']},
       install_requires=[
           'robotframework',
-          'urllib',
-          'urllib2'
       ],
 )
 
