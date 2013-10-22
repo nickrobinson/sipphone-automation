@@ -18,11 +18,11 @@ class PhoneKeywords(object):
 		self.builtin = BuiltIn()
 
 	def _send_request(self, extension, request):
-		headers = { 'Content-Type' : 'application/x-com-polycom-spipx' }
-		URL = "http://" + self.phones[extension][0] + "/push"
-		data = json.dumps(request)
-		auth = digest(self.phones[extension][1], self.phones[extension][2])
-		result = requests.post(URL, auth, verify=False, data, headers)
+                headers = { 'Content-Type' : 'application/x-com-polycom-spipx' }
+                URL = "http://" + self.phones[extension][0] + "/push"
+                data = json.dumps(request)
+                auth = digest(self.phones[extension][1], self.phones[extension][2])
+                result = requests.post(URL, data=data, headers=headers, auth=auth)
 
 	def setup_phone(self, extension, ipaddr, username, password):
 		"""This keyword accepts all parameters neccessary to setup phone storage
