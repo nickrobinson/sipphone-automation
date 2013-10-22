@@ -13,3 +13,6 @@ In order for your Polycom phones to support this test you must add the following
 - apps.push.messageType=5
 - apps.push.username=bob
 - apps.push.password=1234
+
+## Installation
+`pip install sipphone-automation`
