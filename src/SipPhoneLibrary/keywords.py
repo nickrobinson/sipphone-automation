@@ -134,5 +134,6 @@ class PhoneKeywords(object):
 	
 	def expect_ringback(self, extension):
 		"""Check to make sure that the phone with the specified extension is hearing ringback"""
+		self._send_poll(extension)
 		if self.root[0][3][1].text != 'Ringback':
 			self.builtin.fail("Phone is not currently hearing ringback")
