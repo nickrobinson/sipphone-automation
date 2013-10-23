@@ -34,13 +34,12 @@ class PhoneKeywords(object):
 
 	def _send_poll(self, extension):
 		"""This is a helper function that is responsible for getting the current callstate from the phone"""
-		headers = { 'Content-Type' : 'application/x-com-polycom-spipx' }
 		URL = "http://" + self.phones[extension][0] + END_POLL
 		auth = digest(self.phones[extension][1], self.phones[extension][2])
-		result = requests.post(URL, headers=headers, auth=auth)
+		result = requests.get(URL, auth=auth)
 		if(result.status_code != requests.codes.ok):
 			#Try to poll the phone one more time before failing
-			result = requests.post(URL, headers=headers, auth=auth)
+			result = requests.get(URL, auth=auth)
 			if(result.status_code != requests.codes.ok):
 				self.builtin.fail("Result of Polling the phone for callstate was not a 200 OK")
 		else:
@@ -127,5 +126,3 @@ class PhoneKeywords(object):
 		"""This function should check that the phone with the provided extension is 
 		currently in a connected call"""
 		self._send_poll(extension)
-
-			
