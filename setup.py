@@ -11,7 +11,7 @@ Robot Framework keyword library for SIP phone automation.
 
 
 CLASSIFIERS = """
-Development Status :: 2 - Pre-Alpha
+Development Status :: 3 - Alpha
 License :: Public Domain
 Operating System :: OS Independent
 Programming Language :: Python
