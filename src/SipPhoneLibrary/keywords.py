@@ -128,7 +128,11 @@ class PhoneKeywords(object):
 	def expect_connected(self, extension):
 		"""This function should check that the phone with the provided extension is 
 		currently in a connected call"""
-		root = ""
 		self._send_poll(extension)
 		if self.root[0][3][1].text != 'Connected':
 			self.builtin.fail("Call is not connected")
+	
+	def expect_ringback(self, extension):
+		"""Check to make sure that the phone with the specified extension is hearing ringback"""
+		if self.root[0][3][1].text != 'Ringback':
+			self.builtin.fail("Phone is not currently hearing ringback")
