@@ -1,8 +1,10 @@
 *** Settings ***
-Library  SipPhoneLibrary
+Library           SipPhoneLibrary
 
-***Test Cases***
+*** Test Cases ***
 First Phone Test
-	Setup Phone 	1001	192.168.1.229	admin	admin
-
-
+    Setup Phone    1001    10.10.10.7    admin    admin
+    Setup Phone    1002    10.10.10.2    admin    admin
+    Call Number    1001    1002
+    Sleep    2
+    Expect Connected	1001

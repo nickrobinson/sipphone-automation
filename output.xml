@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generated="20131023 10:42:15.424" generator="Robot 2.8.1 (Python 2.6.6 on linux2)">
+<suite source="/home/nrobinso/Development/sipphone-automation/tests/basic_test.txt" id="s1" name="Basic Test">
+<test id="s1-t1" name="First Phone Test">
+<kw type="kw" name="SipPhoneLibrary.Setup Phone">
+<doc>This keyword accepts all parameters neccessary to setup phone storage</doc>
+<arguments>
+<arg>1001</arg>
+<arg>10.10.10.7</arg>
+<arg>admin</arg>
+<arg>admin</arg>
+</arguments>
+<msg timestamp="20131023 10:42:15.586" level="INFO">Added Phone</msg>
+<status status="PASS" endtime="20131023 10:42:15.586" starttime="20131023 10:42:15.586"></status>
+</kw>
+<kw type="kw" name="SipPhoneLibrary.Setup Phone">
+<doc>This keyword accepts all parameters neccessary to setup phone storage</doc>
+<arguments>
+<arg>1002</arg>
+<arg>10.10.10.2</arg>
+<arg>admin</arg>
+<arg>admin</arg>
+</arguments>
+<msg timestamp="20131023 10:42:15.586" level="INFO">Added Phone</msg>
+<status status="PASS" endtime="20131023 10:42:15.587" starttime="20131023 10:42:15.586"></status>
+</kw>
+<kw type="kw" name="SipPhoneLibrary.Call Number">
+<doc>Have the phone with the provided extension dial the number passed in</doc>
+<arguments>
+<arg>1001</arg>
+<arg>1002</arg>
+</arguments>
+<msg timestamp="20131023 10:42:15.596" level="INFO">Starting new HTTP connection (1): 10.10.10.7</msg>
+<msg timestamp="20131023 10:42:15.617" level="INFO">Called number1002</msg>
+<status status="PASS" endtime="20131023 10:42:15.617" starttime="20131023 10:42:15.587"></status>
+</kw>
+<kw type="kw" name="BuiltIn.Sleep">
+<doc>Pauses the test executed for the given time.</doc>
+<arguments>
+<arg>2</arg>
+</arguments>
+<msg timestamp="20131023 10:42:17.619" level="INFO">Slept 2 seconds</msg>
+<status status="PASS" endtime="20131023 10:42:17.619" starttime="20131023 10:42:15.618"></status>
+</kw>
+<kw type="kw" name="SipPhoneLibrary.Expect Connected">
+<doc>This function should check that the phone with the provided extension is </doc>
+<arguments>
+<arg>1001</arg>
+</arguments>
+<msg timestamp="20131023 10:42:17.621" level="INFO">Starting new HTTP connection (1): 10.10.10.7</msg>
+<msg timestamp="20131023 10:42:17.644" level="FAIL">Call is not connected</msg>
+<status status="FAIL" endtime="20131023 10:42:17.645" starttime="20131023 10:42:17.619"></status>
+</kw>
+<doc></doc>
+<tags>
+</tags>
+<status status="FAIL" endtime="20131023 10:42:17.645" critical="yes" starttime="20131023 10:42:15.585">Call is not connected</status>
+</test>
+<doc></doc>
+<metadata>
+</metadata>
+<status status="FAIL" endtime="20131023 10:42:17.645" starttime="20131023 10:42:15.425"></status>
+</suite>
+<statistics>
+<total>
+<stat fail="1" pass="0">Critical Tests</stat>
+<stat fail="1" pass="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat fail="1" pass="0" id="s1" name="Basic Test">Basic Test</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

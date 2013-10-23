@@ -2,8 +2,10 @@ import robot
 import urllib
 import urllib2
 import json
+import xml.etree.ElementTree as ET
 import requests
 from requests.auth import HTTPDigestAuth as digest
+
 
 BEGIN_REQUEST = "<PolycomIPPhone><Data priority=\"Critical\">"
 END_REQUEST = "</Data></PolycomIPPhone>"
@@ -18,6 +20,7 @@ class PhoneKeywords(object):
 	def __init__(self):
 		self.phones = {}
 		self.builtin = BuiltIn()
+		self.root = ""
 
 	def _send_request(self, extension, request):
 		"""This is a helper function that is responsible for sending the push request to the phone"""
@@ -43,7 +46,7 @@ class PhoneKeywords(object):
 			if(result.status_code != requests.codes.ok):
 				self.builtin.fail("Result of Polling the phone for callstate was not a 200 OK")
 		else:
-			XMLstring=result.text.splitlines()
+			self.root = ET.fromstring(result.text)
 			
 	def setup_phone(self, extension, ipaddr, username, password):
 		"""This keyword accepts all parameters neccessary to setup phone storage
@@ -125,4 +128,7 @@ class PhoneKeywords(object):
 	def expect_connected(self, extension):
 		"""This function should check that the phone with the provided extension is 
 		currently in a connected call"""
+		root = ""
 		self._send_poll(extension)
+		if self.root[0][3][1].text != 'Connected':
+			self.builtin.fail("Call is not connected")
