@@ -49,10 +49,13 @@ class PhoneKeywords(object):
 	def setup_phone(self, extension, ipaddr, username, password):
 		"""This keyword accepts all parameters neccessary to setup phone storage
 
-		extension - The extension number of this phone
-		ipaddr - The phones IP Address (v4 only for the moment)
-		username - The phones push URL username. This should be setup in the phones .cfg file
-		password - The phones push URL password
+		`extension` - The extension number of this phone
+
+		`ipaddr` - The phones IP Address (v4 only for the moment)
+
+		`username` - The phones push URL username. This should be setup in the phones .cfg file
+		
+		`password` - The phones push URL password
 		"""
 		self.phones[extension] = (ipaddr, username, password)
 		self.builtin.log("Added Phone")
@@ -119,5 +122,10 @@ class PhoneKeywords(object):
 		"""Press the transfer key on the phone with the specified extension"""
 		URL = BEGIN_REQUEST + "Key:Transfer" + lineNumber + END_REQUEST
 		self._send_request(extension, URL)
+
+	def expect_connected(self, extension):
+		"""This function should check that the phone with the provided extension is 
+		currently in a connected call"""
+		self._send_poll(extension)
 
 			
