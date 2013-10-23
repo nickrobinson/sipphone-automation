@@ -13,6 +13,21 @@ In order for your Polycom phones to support this test you must add the following
 - apps.push.messageType=5
 - apps.push.username=bob
 - apps.push.password=1234
+- apps.statePolling.password="admin"
+- apps.statePolling.username="admin"
+- apps.statePolling.responseMode="0"
+
+Below is a better example of this
+```
+<?xml version="1.0" standalone="yes"?>
+<!-- Customer SIP Application Configuration File -->
+<localcfg>
+<apps apps.statePolling.password="admin"
+ apps.statePolling.username="admin"
+ apps.statePolling.responseMode="0" apps.push.messageType="5"
+ apps.push.username="admin"
+ apps.push.password="admin"/></localcfg>
+```
 
 ## Installation
 This library has been added to the PyPi package system. Installation is as simple as entering the command below
