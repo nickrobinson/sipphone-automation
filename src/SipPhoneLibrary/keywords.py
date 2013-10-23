@@ -54,7 +54,7 @@ class PhoneKeywords(object):
 		`ipaddr` - The phones IP Address (v4 only for the moment)
 
 		`username` - The phones push URL username. This should be setup in the phones .cfg file
-		
+
 		`password` - The phones push URL password
 		"""
 		self.phones[extension] = (ipaddr, username, password)
