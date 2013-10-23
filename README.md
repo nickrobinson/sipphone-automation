@@ -20,13 +20,9 @@ In order for your Polycom phones to support this test you must add the following
 Below is a better example of this
 ```
 <?xml version="1.0" standalone="yes"?>
-<!-- Customer SIP Application Configuration File -->
 <localcfg>
-<apps apps.statePolling.password="admin"
- apps.statePolling.username="admin"
- apps.statePolling.responseMode="0" apps.push.messageType="5"
- apps.push.username="admin"
- apps.push.password="admin"/></localcfg>
+<apps apps.statePolling.password="admin" apps.statePolling.username="admin" apps.statePolling.responseMode="0" apps.push.messageType="5" apps.push.username="admin" apps.push.password="admin"/>
+</localcfg>
 ```
 
 ## Installation
