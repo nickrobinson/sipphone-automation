@@ -8,6 +8,8 @@ from requests.auth import HTTPDigestAuth as digest
 BEGIN_REQUEST = "<PolycomIPPhone><Data priority=\"Critical\">"
 END_REQUEST = "</Data></PolycomIPPhone>"
 
+END_POLL = "/polling/callstateHandler"
+
 from robot.libraries.BuiltIn import BuiltIn
 
 class PhoneKeywords(object):
@@ -18,12 +20,32 @@ class PhoneKeywords(object):
 		self.builtin = BuiltIn()
 
 	def _send_request(self, extension, request):
-                headers = { 'Content-Type' : 'application/x-com-polycom-spipx' }
-                URL = "http://" + self.phones[extension][0] + "/push"
-                data = json.dumps(request)
-                auth = digest(self.phones[extension][1], self.phones[extension][2])
-                result = requests.post(URL, data=data, headers=headers, auth=auth)
+		"""This is a helper function that is responsible for sending the push request to the phone"""
+		headers = { 'Content-Type' : 'application/x-com-polycom-spipx' }
+		URL = "http://" + self.phones[extension][0] + "/push"
+		data = json.dumps(request)
+		auth = digest(self.phones[extension][1], self.phones[extension][2])
+		result = requests.post(URL, data=data, headers=headers, auth=auth)
+		if(result.status_code != requests.codes.ok):
+			#Lets retry once to make sure that we cannot contact the phone
+			result = requests.post(URL, data=data, headers=headers, auth=auth)
+			if(result.status_code != requests.codes.ok):
+				self.builtin.fail("Result of POST request was not OK")
 
+	def _send_poll(self, extension):
+		"""This is a helper function that is responsible for getting the current callstate from the phone"""
+		headers = { 'Content-Type' : 'application/x-com-polycom-spipx' }
+		URL = "http://" + self.phones[extension][0] + END_POLL
+		auth = digest(self.phones[extension][1], self.phones[extension][2])
+		result = requests.post(URL, headers=headers, auth=auth)
+		if(result.status_code != requests.codes.ok):
+			#Try to poll the phone one more time before failing
+			result = requests.post(URL, headers=headers, auth=auth)
+			if(result.status_code != requests.codes.ok):
+				self.builtin.fail("Result of Polling the phone for callstate was not a 200 OK")
+		else:
+			XMLstring=result.text.splitlines()
+			
 	def setup_phone(self, extension, ipaddr, username, password):
 		"""This keyword accepts all parameters neccessary to setup phone storage
 
