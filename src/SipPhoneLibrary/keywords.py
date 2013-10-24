@@ -137,3 +137,15 @@ class PhoneKeywords(object):
 		self._send_poll(extension)
 		if self.root[0][3][1].text != 'Ringback':
 			self.builtin.fail("Phone is not currently hearing ringback")
+
+	def expect_call_hold(self, extension):
+		"""Check to make sure that the phones call is on hold by the other party"""
+		self._send_poll(extension)
+		if self.root[0][3][1].text != 'CallHold':
+			self.builtin.fail("Phone call is not currently on hold by the other party")
+
+	def expect_call_held(self, extension):
+		"""Check to make sure that the phone has placed a call on hold"""
+		self._send_poll(extension)
+		if self.root[0][3][1].text != 'CallHeld':
+			self.builtin.fail("Phone has not placed the call on hold")
