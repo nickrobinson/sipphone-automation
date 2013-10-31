@@ -11,7 +11,7 @@ Robot Framework keyword library for SIP phone automation.
 
 
 CLASSIFIERS = """
-Development Status :: 3 - Alpha
+Development Status :: 4 - Beta
 License :: Public Domain
 Operating System :: OS Independent
 Programming Language :: Python
@@ -26,7 +26,7 @@ setup(name         = 'sipphone-automation',
       author_email = 'nick@nlrobinson.com',
       url          = 'http://github.com/nickrobinson/sipphone-automation',
       license      = 'Public Domain',
-      keywords     = 'robotframework testing test automation sip phones voip',
+      keywords     = 'robotframework testing test automation dtmf sip phones voip',
       platforms    = 'any',
       classifiers  = CLASSIFIERS.splitlines(),
       package_dir  = {'' : 'src'},
@@ -34,6 +34,7 @@ setup(name         = 'sipphone-automation',
       package_data = {'SipPhoneLibrary': ['tests/*.txt']},
       install_requires=[
           'robotframework',
+          'dtmf-detector'
       ],
 )
 
