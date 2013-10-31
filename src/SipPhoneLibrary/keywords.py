@@ -124,6 +124,11 @@ class PhoneKeywords(object):
 		"""Press the transfer key on the phone with the specified extension"""
 		URL = BEGIN_REQUEST + "Key:Transfer" + lineNumber + END_REQUEST
 		self._send_request(extension, URL)
+		
+	def press_messages(self, extension):
+		"""Press the Messages key on the phone with the specified extension"""
+		URL = BEGIN_REQUEST + "Key:Messages" + END_REQUEST
+		self._send_request(extension, URL)
 
 	def expect_connected(self, extension):
 		"""This function should check that the phone with the provided extension is 
