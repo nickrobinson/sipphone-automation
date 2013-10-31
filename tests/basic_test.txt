@@ -6,12 +6,3 @@ First Phone Test
     Setup Phone    1001    10.10.10.7    admin    admin
     Setup Phone    1002    10.10.10.2    admin    admin
 
-Simple Call Test
-    Call Number    1002    1001
-    Sleep    1
-    Expect Ringback    1002
-    Sleep    1
-    Press Handsfree Key    1001
-    Sleep    1
-    Expect Connected    1001
-    Expect Connected    1002
