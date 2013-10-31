@@ -1,0 +1,6 @@
+MANIFEST.in
+requirements.txt
+setup.py
+src/SipPhoneLibrary/__init__.py
+src/SipPhoneLibrary/keywords.py
+src/SipPhoneLibrary/version.py
