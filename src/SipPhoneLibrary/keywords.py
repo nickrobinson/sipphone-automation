@@ -154,3 +154,10 @@ class PhoneKeywords(object):
 		self._send_poll(extension)
 		if self.root[0][3][1].text != 'CallHeld':
 			self.builtin.fail("Phone has not placed the call on hold")
+
+	def expect_dtmf_digits(self, file, digits):
+		"""Check a wav file and verify that the expected digits are heard in the wav file"""
+		dtmf = DTMFdetector(8000, False);
+		data = dtmf.getDTMFfromWav(file);
+		if data != digits:
+			self.builtin.fail("Digits heard(%s) did not match digits expected(%s)" %(data, digits))
