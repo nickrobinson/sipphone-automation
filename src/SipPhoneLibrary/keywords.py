@@ -5,7 +5,7 @@ import json
 import xml.etree.ElementTree as ET
 import requests
 from requests.auth import HTTPDigestAuth as digest
-
+from DTMFDetector import *
 
 BEGIN_REQUEST = "<PolycomIPPhone><Data priority=\"Critical\">"
 END_REQUEST = "</Data></PolycomIPPhone>"
