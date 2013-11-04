@@ -2,7 +2,7 @@ import robot
 import urllib
 import urllib2
 import json
-import xml.etree.ElementTree as ET
+from xml.dom.minidom import parse, parseString
 import requests
 from requests.auth import HTTPDigestAuth as digest
 from DTMFDetector import *
@@ -46,7 +46,7 @@ class PhoneKeywords(object):
 			if(result.status_code != requests.codes.ok):
 				self.builtin.fail("Result of Polling the phone for callstate was not a 200 OK")
 		else:
-			self.root = ET.fromstring(result.text)
+			self.root = parseString(result.text)
 			
 	def setup_phone(self, extension, ipaddr, username, password):
 		"""This keyword accepts all parameters neccessary to setup phone storage
@@ -134,8 +134,9 @@ class PhoneKeywords(object):
 		"""This function should check that the phone with the provided extension is 
 		currently in a connected call"""
 		self._send_poll(extension)
-		if self.root[0][3][1].text != 'Connected':
-			self.builtin.fail("Call is not connected")
+		node = self.root.getElementsByTagName('CallState')
+                if node[0].nodeValue != 'Connected':
+                        self.builtin.fail("Phone call is not currently connected")
 	
 	def expect_ringback(self, extension):
 		"""Check to make sure that the phone with the specified extension is hearing ringback"""
@@ -146,14 +147,16 @@ class PhoneKeywords(object):
 	def expect_call_hold(self, extension):
 		"""Check to make sure that the phones call is on hold by the other party"""
 		self._send_poll(extension)
-		if self.root[0][3][1].text != 'CallHold':
+		node = self.root.getElementsByTagName('CallState')
+		if node[0].nodeValue != 'CallHold':
 			self.builtin.fail("Phone call is not currently on hold by the other party")
 
 	def expect_call_held(self, extension):
 		"""Check to make sure that the phone has placed a call on hold"""
 		self._send_poll(extension)
-		if self.root[0][3][1].text != 'CallHeld':
-			self.builtin.fail("Phone has not placed the call on hold")
+		node = self.root.getElementsByTagName('CallState')
+                if node[0].nodeValue != 'CallHeld':
+                        self.builtin.fail("Phone call is not currently on held by this phone")
 
 	def expect_dtmf_digits(self, file, digits):
 		"""Check a wav file and verify that the expected digits are heard in the wav file"""
