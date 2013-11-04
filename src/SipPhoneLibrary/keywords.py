@@ -164,3 +164,11 @@ class PhoneKeywords(object):
 		data = dtmf.getDTMFfromWav(file);
 		if data != digits:
 			self.builtin.fail("Digits heard(%s) did not match digits expected(%s)" %(data, digits))
+
+	def expect_caller_id(self, extension, callerid):
+		"""Check the incoming call caller id for what you expect"""
+		self._send_poll(extension)
+		node = self.root.getElementsByTagName('CallingPartyName')
+                if node[0].nodeValue != callerid:
+                        self.builtin.fail("Current Calling party %s does not match expected caller id: %s"%(node[0].nodeValue, callerid))
+
