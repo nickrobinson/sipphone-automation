@@ -109,6 +109,11 @@ class SipPhoneAutomationLibrary:
 		URL = BEGIN_REQUEST + "Key:Hold" + END_REQUEST
 		self._send_request(extension, URL)
 
+	def press_redial(self, extension):
+		"""Press the redial key on the phone with the specified extension"""
+		URL = BEGIN_REQUEST + "Key:Redial" + END_REQUEST
+		self._send_request(extension, URL)
+
 	def mute_mic(self, extension):
 		"""Press the mic mute key on the phone with the specified extension"""
 		URL = BEGIN_REQUEST + "Key:MicMute" + END_REQUEST
@@ -157,12 +162,12 @@ class SipPhoneAutomationLibrary:
                 if node[0].nodeValue != 'CallHeld':
                         self.builtin.fail("Phone call is not currently on held by this phone")
 
-	def expect_dtmf_digits(self, file, digits):
-		"""Check a wav file and verify that the expected digits are heard in the wav file"""
-		dtmf = DTMFdetector(8000, False);
-		data = dtmf.getDTMFfromWav(file);
-		if data != digits:
-			self.builtin.fail("Digits heard(%s) did not match digits expected(%s)" %(data, digits))
+	#def expect_dtmf_digits(self, file, digits):
+	#	"""Check a wav file and verify that the expected digits are heard in the wav file"""
+	#	dtmf = DTMFdetector(8000, False);
+	#	data = dtmf.getDTMFfromWav(file);
+	#	if data != digits:
+	#		self.builtin.fail("Digits heard(%s) did not match digits expected(%s)" %(data, digits))
 
 	def expect_caller_id(self, extension, callerid):
 		"""Check the incoming call caller id for what you expect"""
@@ -170,4 +175,16 @@ class SipPhoneAutomationLibrary:
 		node = self.root.getElementsByTagName('CallingPartyName')
                 if node[0].nodeValue != callerid:
                         self.builtin.fail("Current Calling party %s does not match expected caller id: %s"%(node[0].nodeValue, callerid))
+	
+	def get_phone_mac(self, extension):
+		"""Returns the MAC address of the extension specified"""
+		self._send_poll(extension)
+		node = self.root.getElementsByTagName('MACAddress')
+		return node[0].nodeValue
+
+	def get_phone_model(self, extension):
+		"""Returns the model number of the phone with the specified extension"""
+		self._send_poll(extension)
+		node = self.root.getElementsByTageName('ModelNumber')
+		return node[0].nodeValue
 
