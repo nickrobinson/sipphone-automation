@@ -23,9 +23,6 @@ Below is a better example of this
 <?xml version="1.0" standalone="yes"?>
 <localcfg>
 <apps apps.statePolling.password="admin" apps.statePolling.username="admin" apps.statePolling.responseMode="0" apps.push.messageType="5" apps.push.username="admin" apps.push.password="admin"/>
-<tones>
-<DTMF tone.dtmf.rfc2833Control="0"/>
-</tones>
 </localcfg>
 ```
 
