@@ -1,9 +1,5 @@
-import urllib
 import urllib2
-import json
 from xml.dom.minidom import parse, parseString
-import requests
-from requests.auth import HTTPDigestAuth as digest
 from DTMFDetector import *
 
 import robot
@@ -27,28 +23,30 @@ class PhoneKeywords(object):
     def _send_request(self, extension, request):
         """This is a helper function that is responsible for sending the push 
         request to the phone"""
-        headers = { 'Content-Type' : 'application/x-com-polycom-spipx' }
-        URL = "http://" + self.phones[extension][0] + "/push"
-        data = json.dumps(request)
-        auth = digest(self.phones[extension][1], self.phones[extension][2])
-        result = requests.post(URL, data=data, headers=headers, auth=auth, \
-            timeout=self.http_timeout)
-        if(result.status_code != requests.codes.ok):
-            #Lets retry once to make sure that we cannot contact the phone
-            result = requests.post(URL, data=data, headers=headers, auth=auth)
-            if(result.status_code != requests.codes.ok):
-                self.builtin.fail("Result of POST request was not OK")
-
+        headers = {'Content-Type': 'application/x-com-polycom-spipx'}
+        url = "http://" + self.phones[extension][0] + "/push"
+        username = self.phones[extension][1]
+        password = self.phones[extension][2]
+        pwmgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        pwmgr.add_password(None, url, username, password)
+        authhandler = urllib2.HTTPDigestAuthHandler(pwmgr)
+        opener = urllib2.build_opener(authhandler)
+        urllib2.install_opener(opener)
+        req = urllib2.Request(url=url, data=request, headers=headers)
+        resp = urllib2.urlopen(req, timeout=self.http_timeout)
+        if resp.getcode() != 200:
+            self.buildin.fail("Result of POST request was not OK")
+        
     def _send_poll(self, extension):
         """This is a helper function that is responsible for getting the current
         callstate from the phone"""
         URL = "http://" + self.phones[extension][0] + END_POLL
         auth = digest(self.phones[extension][1], self.phones[extension][2])
         result = requests.get(URL, auth=auth, timeout=self.http_timeout)
-        if(result.status_code != requests.codes.ok):
+        if result.status_code != requests.codes.ok:
             #Try to poll the phone one more time before failing
             result = requests.get(URL, auth=auth, timeout=self.http_timeout)
-            if(result.status_code != requests.codes.ok):
+            if result.status_code != requests.codes.ok:
                 self.builtin.fail("Result of Polling the phone for callstate was not a 200 OK")
         else:
             self.root = parseString(result.text)
