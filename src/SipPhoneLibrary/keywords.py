@@ -140,8 +140,8 @@ class PhoneKeywords(object):
         currently in a connected call"""
         self._send_poll(extension)
         node = self.root.getElementsByTagName('CallState')
-                if node[0].nodeValue != 'Connected':
-                        self.builtin.fail("Phone call is not currently connected")
+        if node[0].nodeValue != 'Connected':
+            self.builtin.fail("Phone call is not currently connected")
     
     def expect_ringback(self, extension):
         """Check to make sure that the phone with the specified extension is hearing ringback"""
@@ -160,8 +160,8 @@ class PhoneKeywords(object):
         """Check to make sure that the phone has placed a call on hold"""
         self._send_poll(extension)
         node = self.root.getElementsByTagName('CallState')
-                if node[0].nodeValue != 'CallHeld':
-                        self.builtin.fail("Phone call is not currently on held by this phone")
+        if node[0].nodeValue != 'CallHeld':
+            self.builtin.fail("Phone call is not currently on held by this phone")
 
     #def expect_dtmf_digits(self, file, digits):
     #    """Check a wav file and verify that the expected digits are heard in the wav file"""
