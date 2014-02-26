@@ -1,4 +1,3 @@
-import robot
 import urllib
 import urllib2
 import json
@@ -7,12 +6,13 @@ import requests
 from requests.auth import HTTPDigestAuth as digest
 from DTMFDetector import *
 
+import robot
+from robot.libraries.BuiltIn import BuiltIn
+
 BEGIN_REQUEST = "<PolycomIPPhone><Data priority=\"Critical\">"
 END_REQUEST = "</Data></PolycomIPPhone>"
-
 END_POLL = "/polling/callstateHandler"
-
-from robot.libraries.BuiltIn import BuiltIn
+DEFAULT_TIMEOUT = 10 #seconds
 
 class PhoneKeywords(object):
     ROBOT_LIBRARY_SCOPE = 'Global'
@@ -21,6 +21,7 @@ class PhoneKeywords(object):
         self.phones = {}
         self.builtin = BuiltIn()
         self.root = ""
+        self.timeout = DEFAULT_TIMEOUT
 
     def _send_request(self, extension, request):
         """This is a helper function that is responsible for sending the push request to the phone"""
@@ -28,7 +29,7 @@ class PhoneKeywords(object):
         URL = "http://" + self.phones[extension][0] + "/push"
         data = json.dumps(request)
         auth = digest(self.phones[extension][1], self.phones[extension][2])
-        result = requests.post(URL, data=data, headers=headers, auth=auth)
+        result = requests.post(URL, data=data, headers=headers, auth=auth, timeout=self.timeout)
         if(result.status_code != requests.codes.ok):
             #Lets retry once to make sure that we cannot contact the phone
             result = requests.post(URL, data=data, headers=headers, auth=auth)
@@ -39,10 +40,10 @@ class PhoneKeywords(object):
         """This is a helper function that is responsible for getting the current callstate from the phone"""
         URL = "http://" + self.phones[extension][0] + END_POLL
         auth = digest(self.phones[extension][1], self.phones[extension][2])
-        result = requests.get(URL, auth=auth)
+        result = requests.get(URL, auth=auth, timeout=self.timeout)
         if(result.status_code != requests.codes.ok):
             #Try to poll the phone one more time before failing
-            result = requests.get(URL, auth=auth)
+            result = requests.get(URL, auth=auth, timeout=self.timeout)
             if(result.status_code != requests.codes.ok):
                 self.builtin.fail("Result of Polling the phone for callstate was not a 200 OK")
         else:
@@ -61,6 +62,9 @@ class PhoneKeywords(object):
         """
         self.phones[extension] = (ipaddr, username, password)
         self.builtin.log("Added Phone")
+
+    def set_timeout(self, timeout):
+        self.timeout = timeout
 
     def call_number(self, extension, number):
         """Have the phone with the provided extension dial the number passed in"""
@@ -140,8 +144,8 @@ class PhoneKeywords(object):
         currently in a connected call"""
         self._send_poll(extension)
         node = self.root.getElementsByTagName('CallState')
-                if node[0].nodeValue != 'Connected':
-                        self.builtin.fail("Phone call is not currently connected")
+        if node[0].nodeValue != 'Connected':
+            self.builtin.fail("Phone call is not currently connected")
     
     def expect_ringback(self, extension):
         """Check to make sure that the phone with the specified extension is hearing ringback"""
@@ -160,8 +164,8 @@ class PhoneKeywords(object):
         """Check to make sure that the phone has placed a call on hold"""
         self._send_poll(extension)
         node = self.root.getElementsByTagName('CallState')
-                if node[0].nodeValue != 'CallHeld':
-                        self.builtin.fail("Phone call is not currently on held by this phone")
+        if node[0].nodeValue != 'CallHeld':
+            self.builtin.fail("Phone call is not currently on held by this phone")
 
     #def expect_dtmf_digits(self, file, digits):
     #    """Check a wav file and verify that the expected digits are heard in the wav file"""
@@ -174,8 +178,8 @@ class PhoneKeywords(object):
         """Check the incoming call caller id for what you expect"""
         self._send_poll(extension)
         node = self.root.getElementsByTagName('CallingPartyName')
-                if node[0].nodeValue != callerid:
-                        self.builtin.fail("Current Calling party %s does not match expected caller id: %s"%(node[0].nodeValue, callerid))
+        if node[0].nodeValue != callerid:
+            self.builtin.fail("Current Calling party %s does not match expected caller id: %s"%(node[0].nodeValue, callerid))
     
     def get_phone_mac(self, extension):
         """Returns the MAC address of the extension specified"""
