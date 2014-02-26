@@ -8,6 +8,7 @@ from DTMFDetector import *
 
 import robot
 from robot.libraries.BuiltIn import BuiltIn
+from robot import utils
 
 BEGIN_REQUEST = "<PolycomIPPhone><Data priority=\"Critical\">"
 END_REQUEST = "</Data></PolycomIPPhone>"
@@ -21,15 +22,17 @@ class PhoneKeywords(object):
         self.phones = {}
         self.builtin = BuiltIn()
         self.root = ""
-        self.timeout = DEFAULT_TIMEOUT
+        self.http_timeout = DEFAULT_TIMEOUT
 
     def _send_request(self, extension, request):
-        """This is a helper function that is responsible for sending the push request to the phone"""
+        """This is a helper function that is responsible for sending the push 
+        request to the phone"""
         headers = { 'Content-Type' : 'application/x-com-polycom-spipx' }
         URL = "http://" + self.phones[extension][0] + "/push"
         data = json.dumps(request)
         auth = digest(self.phones[extension][1], self.phones[extension][2])
-        result = requests.post(URL, data=data, headers=headers, auth=auth, timeout=self.timeout)
+        result = requests.post(URL, data=data, headers=headers, auth=auth, \
+            timeout=self.http_timeout)
         if(result.status_code != requests.codes.ok):
             #Lets retry once to make sure that we cannot contact the phone
             result = requests.post(URL, data=data, headers=headers, auth=auth)
@@ -37,19 +40,21 @@ class PhoneKeywords(object):
                 self.builtin.fail("Result of POST request was not OK")
 
     def _send_poll(self, extension):
-        """This is a helper function that is responsible for getting the current callstate from the phone"""
+        """This is a helper function that is responsible for getting the current
+        callstate from the phone"""
         URL = "http://" + self.phones[extension][0] + END_POLL
         auth = digest(self.phones[extension][1], self.phones[extension][2])
-        result = requests.get(URL, auth=auth, timeout=self.timeout)
+        result = requests.get(URL, auth=auth, timeout=self.http_timeout)
         if(result.status_code != requests.codes.ok):
             #Try to poll the phone one more time before failing
-            result = requests.get(URL, auth=auth, timeout=self.timeout)
+            result = requests.get(URL, auth=auth, timeout=self.http_timeout)
             if(result.status_code != requests.codes.ok):
                 self.builtin.fail("Result of Polling the phone for callstate was not a 200 OK")
         else:
             self.root = parseString(result.text)
             
-    def setup_phone(self, extension, ipaddr, username, password):
+    def setup_phone(self, extension, ipaddr, username, password, \
+        http_timeout='{0} seconds'.format(DEFAULT_TIMEOUT)):
         """This keyword accepts all parameters neccessary to setup phone storage
 
         `extension` - The extension number of this phone
@@ -59,12 +64,13 @@ class PhoneKeywords(object):
         `username` - The phones push URL username. This should be setup in the phones .cfg file
 
         `password` - The phones push URL password
+        
+        `http_timeout` - Timeout for SIP phone API HTTP requests
         """
         self.phones[extension] = (ipaddr, username, password)
         self.builtin.log("Added Phone")
-
-    def set_timeout(self, timeout):
-        self.timeout = timeout
+        self.http_timeout = utils.timestr_to_secs(http_timeout)
+        self.builtin.log("HTTP Timeout is {0} seconds".format(self.http_timeout))
 
     def call_number(self, extension, number):
         """Have the phone with the provided extension dial the number passed in"""
