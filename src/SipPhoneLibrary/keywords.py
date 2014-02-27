@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import urllib2
 from xml.dom.minidom import parse, parseString
-from DTMFDetector import *
+#from DTMFDetector import *
 
 import robot
 from robot.libraries.BuiltIn import BuiltIn
