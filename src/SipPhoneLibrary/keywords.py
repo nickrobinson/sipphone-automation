@@ -1,9 +1,6 @@
-import urllib
+#!/usr/bin/env python
 import urllib2
-import json
 from xml.dom.minidom import parse, parseString
-import requests
-from requests.auth import HTTPDigestAuth as digest
 from DTMFDetector import *
 
 import robot
@@ -12,8 +9,45 @@ from robot import utils
 
 BEGIN_REQUEST = "<PolycomIPPhone><Data priority=\"Critical\">"
 END_REQUEST = "</Data></PolycomIPPhone>"
-END_POLL = "/polling/callstateHandler"
+PUSH_URI = "/push"
+POLL_CALL_STATE_URI = "/polling/callstateHandler"
+DEFAULT_USERNAME = 'admin'
+DEFAULT_PASSWORD = 'admin'
+DEFAULT_PORT = 80
 DEFAULT_TIMEOUT = 10 #seconds
+
+class Phone(object):
+    def __init__(self, extension, ipaddr, \
+        username=DEFAULT_USERNAME, \
+        password=DEFAULT_PASSWORD, \
+        port=DEFAULT_PORT, timeout=DEFAULT_TIMEOUT):
+        self.extension = extension
+        self.ipaddr = ipaddr
+        self.port = port
+        #ToDo: do something with port
+        url = "http://{0}{1}"
+        self.push_url = url.format(self.ipaddr, PUSH_URI)
+        self.poll_call_state_url = url.format(self.ipaddr, POLL_CALL_STATE_URI)
+        self.username = username
+        self.password = password
+        self.timeout = timeout
+        self.headers = {'Content-Type': 'application/x-com-polycom-spipx'}
+        
+    def _send(self, xml_string, url):
+        pwmgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        pwmgr.add_password(None, url, self.username, self.password)
+        authhandler = urllib2.HTTPDigestAuthHandler(pwmgr)
+        opener = urllib2.build_opener(authhandler)
+        urllib2.install_opener(opener)
+        req = urllib2.Request(url=url, data=xml_string, headers=self.headers)
+        resp = urllib2.urlopen(req, timeout=self.timeout)
+        return resp
+        
+    def send_request(self, xml_string):
+        return self._send(xml_string, self.push_url)
+    
+    def send_poll(self):
+        return self._send(xml_string, self.poll_call_state_url)
 
 class PhoneKeywords(object):
     ROBOT_LIBRARY_SCOPE = 'Global'
@@ -22,55 +56,37 @@ class PhoneKeywords(object):
         self.phones = {}
         self.builtin = BuiltIn()
         self.root = ""
-        self.http_timeout = DEFAULT_TIMEOUT
+        self.timeout = DEFAULT_TIMEOUT
 
-    def _send_request(self, extension, request):
+    def _send_request(self, extension, xml_string):
         """This is a helper function that is responsible for sending the push 
         request to the phone"""
-        headers = { 'Content-Type' : 'application/x-com-polycom-spipx' }
-        URL = "http://" + self.phones[extension][0] + "/push"
-        data = json.dumps(request)
-        auth = digest(self.phones[extension][1], self.phones[extension][2])
-        result = requests.post(URL, data=data, headers=headers, auth=auth, \
-            timeout=self.http_timeout)
-        if(result.status_code != requests.codes.ok):
-            #Lets retry once to make sure that we cannot contact the phone
-            result = requests.post(URL, data=data, headers=headers, auth=auth)
-            if(result.status_code != requests.codes.ok):
-                self.builtin.fail("Result of POST request was not OK")
-
+        resp = self.phones[extension].send_request(xml_string)
+        if resp.getcode() != 200:
+            self.builtin.fail("Result of POST request was not OK")
+        
     def _send_poll(self, extension):
         """This is a helper function that is responsible for getting the current
         callstate from the phone"""
-        URL = "http://" + self.phones[extension][0] + END_POLL
-        auth = digest(self.phones[extension][1], self.phones[extension][2])
-        result = requests.get(URL, auth=auth, timeout=self.http_timeout)
-        if(result.status_code != requests.codes.ok):
-            #Try to poll the phone one more time before failing
-            result = requests.get(URL, auth=auth, timeout=self.http_timeout)
-            if(result.status_code != requests.codes.ok):
-                self.builtin.fail("Result of Polling the phone for callstate was not a 200 OK")
+        resp = self.phones[extension].send_poll()
+        if resp.getcode() != 200:
+            self.builtin.fail("Result of Polling the phone for callstate was not OK")
         else:
-            self.root = parseString(result.text)
+            self.root = parseString(resp.read())
             
-    def setup_phone(self, extension, ipaddr, username, password, \
-        http_timeout='{0} seconds'.format(DEFAULT_TIMEOUT)):
+    def setup_phone(self, extension, ipaddr, \
+        username=DEFAULT_USERNAME, password=DEFAULT_PORT, \
+        port=str(DEFAULT_PORT), timeout='{0} seconds'.format(DEFAULT_TIMEOUT)):
         """This keyword accepts all parameters neccessary to setup phone storage
-
         `extension` - The extension number of this phone
-
         `ipaddr` - The phones IP Address (v4 only for the moment)
-
         `username` - The phones push URL username. This should be setup in the phones .cfg file
-
         `password` - The phones push URL password
-        
-        `http_timeout` - Timeout for SIP phone API HTTP requests
+        `timeout` - Timeout for SIP phone API HTTP requests
         """
-        self.phones[extension] = (ipaddr, username, password)
+        self.phones[extension] = Phone(extension, ipaddr, username, password, \
+            port, timeout=utils.timestr_to_secs(timeout))
         self.builtin.log("Added Phone")
-        self.http_timeout = utils.timestr_to_secs(http_timeout)
-        self.builtin.log("HTTP Timeout is {0} seconds".format(self.http_timeout))
 
     def call_number(self, extension, number):
         """Have the phone with the provided extension dial the number passed in"""
@@ -198,4 +214,11 @@ class PhoneKeywords(object):
         self._send_poll(extension)
         node = self.root.getElementsByTageName('ModelNumber')
         return node[0].nodeValue
+        
+if __name__ == '__main__':
+    #ToDo: write unit test here
+    lib = PhoneKeywords()
+    lib.setup_phone('1001', '10.17.127.216', 'admin', 'admin', '80', '5 seconds')
+    lib.press_handsfree_key('1001')
+    
 
