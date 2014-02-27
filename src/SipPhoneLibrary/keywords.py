@@ -33,13 +33,22 @@ class Phone(object):
         self.timeout = timeout
         self.headers = {'Content-Type': 'application/x-com-polycom-spipx'}
         
-    def _send(self, xml_string, url):
+    def _digest_auth(self, url):
         pwmgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
         pwmgr.add_password(None, url, self.username, self.password)
         authhandler = urllib2.HTTPDigestAuthHandler(pwmgr)
         opener = urllib2.build_opener(authhandler)
         urllib2.install_opener(opener)
+                
+    def _send(self, xml_string, url):
+        self._digest_auth(url)
         req = urllib2.Request(url=url, data=xml_string, headers=self.headers)
+        resp = urllib2.urlopen(req, timeout=self.timeout)
+        return resp
+        
+    def _get(self, url):
+        self._digest_auth(url)
+        req = urllib2.Request(url=url, headers=self.headers)
         resp = urllib2.urlopen(req, timeout=self.timeout)
         return resp
         
@@ -47,7 +56,7 @@ class Phone(object):
         return self._send(xml_string, self.push_url)
     
     def send_poll(self):
-        return self._send(xml_string, self.poll_call_state_url)
+        return self._get(self.poll_call_state_url)
 
 class PhoneKeywords(object):
     ROBOT_LIBRARY_SCOPE = 'Global'
@@ -172,7 +181,7 @@ class PhoneKeywords(object):
     def expect_ringback(self, extension):
         """Check to make sure that the phone with the specified extension is hearing ringback"""
         self._send_poll(extension)
-        if self.root[0][3][1].text != 'Ringback':
+        if self.root[0][3][1].text != 'RingBack':
             self.builtin.fail("Phone is not currently hearing ringback")
 
     def expect_call_hold(self, extension):
@@ -216,9 +225,20 @@ class PhoneKeywords(object):
         return node[0].nodeValue
         
 if __name__ == '__main__':
-    #ToDo: write unit test here
+    #unit test
+    import time
+    ext1 = '1001'
+    ext2 = '1002'
     lib = PhoneKeywords()
-    lib.setup_phone('1001', '10.17.127.216', 'admin', 'admin', '80', '5 seconds')
-    lib.press_handsfree_key('1001')
+    lib.setup_phone(ext1, '10.17.127.216', 'admin', 'admin', '80', '5 seconds')
+    lib.press_headset_key(ext1)
+    for digit in ext2:
+        lib.press_digit(ext1, digit)
+    time.sleep(2)
+    lib._send_poll(ext1)
+    print lib.root.toxml()
+    call_state = lib.root.getElementsByTagName('CallState')[0].childNodes[0].data
+    print 'call_state:', call_state
+    assert call_state == 'RingBack'
     
 
