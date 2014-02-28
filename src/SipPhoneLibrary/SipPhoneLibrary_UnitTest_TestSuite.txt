@@ -1,0 +1,19 @@
+*** Settings ***
+Documentation     This test suite also serves as a unit test for the SipPhoneLibrary.
+Library           String
+Library           ../SipPhoneLibrary/
+
+*** Variables ***
+${EXT1}           1001
+${EXT2}           1002
+${EXT1_IP}        10.17.127.216
+
+*** Test Cases ***
+Example Test Case 1
+    Setup Phone    ${EXT1}    ${EXT1_IP}
+    Press Headset Key    ${EXT1}
+    ${digits}=    Split String To Characters    ${EXT2}
+    : FOR    ${digit}    IN    @{digits}
+    \    Press Digit    ${EXT1}    ${digit}
+    Sleep    2
+    Expect Ringback    ${EXT1}

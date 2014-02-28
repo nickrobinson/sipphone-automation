@@ -64,7 +64,7 @@ class PhoneKeywords(object):
     def __init__(self):
         self.phones = {}
         self.builtin = BuiltIn()
-        self.root = ""
+        self.root = None
         self.timeout = DEFAULT_TIMEOUT
 
     def _send_request(self, extension, xml_string):
@@ -84,7 +84,7 @@ class PhoneKeywords(object):
             self.root = parseString(resp.read())
             
     def setup_phone(self, extension, ipaddr, \
-        username=DEFAULT_USERNAME, password=DEFAULT_PORT, \
+        username=DEFAULT_USERNAME, password=DEFAULT_PASSWORD, \
         port=str(DEFAULT_PORT), timeout='{0} seconds'.format(DEFAULT_TIMEOUT)):
         """This keyword accepts all parameters neccessary to setup phone storage
         `extension` - The extension number of this phone
@@ -236,6 +236,7 @@ if __name__ == '__main__':
     for digit in ext2:
         lib.press_digit(ext1, digit)
     time.sleep(2)
+    lib.root = None
     lib._send_poll(ext1)
     print lib.root.toxml()
     call_state = lib.root.getElementsByTagName('CallState')[0].childNodes[0].data
