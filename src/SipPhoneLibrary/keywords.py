@@ -11,6 +11,8 @@ BEGIN_REQUEST = "<PolycomIPPhone><Data priority=\"Critical\">"
 END_REQUEST = "</Data></PolycomIPPhone>"
 PUSH_URI = "/push"
 POLL_CALL_STATE_URI = "/polling/callstateHandler"
+POLL_DEVICE_INFO_URI = "/polling/deviceHandler"
+POLL_NETWORK_INFO_URI = "/polling/networkHandler"
 DEFAULT_USERNAME = 'admin'
 DEFAULT_PASSWORD = 'admin'
 DEFAULT_PORT = 80
@@ -24,10 +26,11 @@ class Phone(object):
         self.extension = extension
         self.ipaddr = ipaddr
         self.port = port
-        #ToDo: do something with port
-        url = "http://{0}{1}"
-        self.push_url = url.format(self.ipaddr, PUSH_URI)
-        self.poll_call_state_url = url.format(self.ipaddr, POLL_CALL_STATE_URI)
+        url = "http://{0}:{1}{2}"
+        self.push_url = url.format(self.ipaddr, self.port, PUSH_URI)
+        self.poll_call_state_url = url.format(self.ipaddr, self.port, POLL_CALL_STATE_URI)
+        self.poll_device_info_url = url.format(self.ipaddr, self.port, POLL_DEVICE_INFO_URI)
+        self.poll_network_info_url = url.format(self.ipaddr, self.port, POLL_NETWORK_INFO_URI)
         self.username = username
         self.password = password
         self.timeout = timeout
@@ -55,8 +58,14 @@ class Phone(object):
     def send_request(self, xml_string):
         return self._send(xml_string, self.push_url)
     
-    def send_poll(self):
+    def poll_call_state(self):
         return self._get(self.poll_call_state_url)
+        
+    def poll_device_info(self):
+        return self._get(self.poll_device_info_url)
+        
+    def poll_network_info(self):
+        return self._get(self.poll_network_info_url)
 
 class PhoneKeywords(object):
     ROBOT_LIBRARY_SCOPE = 'Global'
@@ -74,12 +83,33 @@ class PhoneKeywords(object):
         if resp.getcode() != 200:
             self.builtin.fail("Result of POST request was not OK")
         
-    def _send_poll(self, extension):
+    def _poll_call_state(self, extension):
         """This is a helper function that is responsible for getting the current
         callstate from the phone"""
-        resp = self.phones[extension].send_poll()
+        self.root = None
+        resp = self.phones[extension].poll_call_state()
         if resp.getcode() != 200:
             self.builtin.fail("Result of Polling the phone for callstate was not OK")
+        else:
+            self.root = parseString(resp.read())
+            
+    def _poll_device_info(self, extension):
+        """This is a helper function that is responsible for getting the 
+        device info from the phone"""
+        self.root = None
+        resp = self.phones[extension].poll_device_info()
+        if resp.getcode() != 200:
+            self.builtin.fail("Result of Polling the phone for device info was not OK")
+        else:
+            self.root = parseString(resp.read())
+            
+    def _poll_network_info(self, extension):
+        """This is a helper function that is responsible for getting the current
+        network configuration from the phone"""
+        self.root = None
+        resp = self.phones[extension].poll_network_info()
+        if resp.getcode() != 200:
+            self.builtin.fail("Result of Polling the phone for network info was not OK")
         else:
             self.root = parseString(resp.read())
             
@@ -173,28 +203,28 @@ class PhoneKeywords(object):
     def expect_connected(self, extension):
         """This function should check that the phone with the provided extension is 
         currently in a connected call"""
-        self._send_poll(extension)
+        self._poll_call_state(extension)
         node = self.root.getElementsByTagName('CallState')[0]
         if node.childNodes[0].data != 'Connected':
             self.builtin.fail("Phone call is not currently connected")
     
     def expect_ringback(self, extension):
         """Check to make sure that the phone with the specified extension is hearing ringback"""
-        self._send_poll(extension)
+        self._poll_call_state(extension)
 	node = self.root.getElementsByTagName('CallState')[0]
         if node.childNodes[0].data != 'RingBack':
             self.builtin.fail("Phone call is not currently getting ringback")
 
     def expect_call_hold(self, extension):
         """Check to make sure that the phones call is on hold by the other party"""
-        self._send_poll(extension)
+        self._poll_call_state(extension)
         node = self.root.getElementsByTagName('CallState')[0]
         if node.childNodes[0].data != 'CallHold':
             self.builtin.fail("Phone call is not currently on hold by the other party")
 
     def expect_call_held(self, extension):
         """Check to make sure that the phone has placed a call on hold"""
-        self._send_poll(extension)
+        self._poll_call_state(extension)
         node = self.root.getElementsByTagName('CallState')[0]
         if node.childNodes[0].data != 'CallHeld':
             self.builtin.fail("Phone call is not currently held by this phone")
@@ -208,39 +238,89 @@ class PhoneKeywords(object):
 
     def expect_caller_id(self, extension, callerid):
         """Check the incoming call caller id for what you expect"""
-        self._send_poll(extension)
+        self._poll_call_state(extension)
         node = self.root.getElementsByTagName('CallingPartyName')[0]
         if node.childNodes[0].data != callerid:
             self.builtin.fail("Current Calling party %s does not match expected caller id: %s"%(node[0].nodeValue, callerid))
     
     def get_phone_mac(self, extension):
         """Returns the MAC address of the extension specified"""
-        self._send_poll(extension)
-        node = self.root.getElementsByTagName('MACAddress')[0]
-        return node.childNodes[0].data
+        phone_mac = ''
+        self._poll_device_info(extension)
+        elems = self.root.getElementsByTagName('MACAddress')
+        if len(elems):
+            phone_mac = elems[0].childNodes[0].data
+        return phone_mac
 
     def get_phone_model(self, extension):
         """Returns the model number of the phone with the specified extension"""
-        self._send_poll(extension)
-        node = self.root.getElementsByTageName('ModelNumber')[0]
-        return node.childNodes[0].data
+        phone_model = ''
+        self._poll_device_info(extension)
+        elems = self.root.getElementsByTagName('ModelNumber')
+        if len(elems):
+            phone_model = elems[0].childNodes[0].data
+        return phone_model
         
-if __name__ == '__main__':
+def run_unit_test(phone1, phone2):
     #unit test
     import time
-    ext1 = '1001'
-    ext2 = '1002'
+        
+    #init library
     lib = PhoneKeywords()
-    lib.setup_phone(ext1, '10.17.127.216', 'admin', 'admin', '80', '5 seconds')
+    
+    #setup
+    ext1 = phone1['extension']
+    ext2 = phone2['extension']
+    lib.setup_phone(ext1, phone1['ipaddr'], port=phone1['port'], timeout=phone1['timeout'])
+    lib.setup_phone(ext2, phone2['ipaddr'], port=phone2['port'], timeout=phone2['timeout'])
+    
+    lib._poll_call_state(ext1)
+    print lib.root.toxml()
+    
+    #phone model
+    model1 = lib.get_phone_model(ext1)
+    assert model1 == phone1['model']
+    model2 = lib.get_phone_model(ext2)
+    assert model2 == phone2['model']
+    
+    #phone mac
+    mac1 = lib.get_phone_mac(ext1)
+    assert mac1 == phone1['mac']
+    mac2 = lib.get_phone_mac(ext2)
+    assert mac2 == phone2['mac']
+    
+    #press digit
     lib.press_headset_key(ext1)
     for digit in ext2:
         lib.press_digit(ext1, digit)
     time.sleep(2)
-    lib.root = None
-    lib._send_poll(ext1)
+    
+    lib._poll_call_state(ext1)
     print lib.root.toxml()
+    
+    #call_state
     call_state = lib.root.getElementsByTagName('CallState')[0].childNodes[0].data
     print 'call_state:', call_state
     assert call_state == 'RingBack'
+
+if __name__ == '__main__':
+    phone1 = {
+        'extension': '1001',
+        'ipaddr': '10.17.127.216',
+        'port': '8081',
+        'model': 'SoundPoint IP 321',
+        'mac': '0004f2a76cd5',
+        'timeout': '5 seconds'
+    }
+    phone2 = {
+        'extension': '1002',
+        'ipaddr': '10.17.127.216',
+        'port': '8082',
+        'model': 'SoundPoint IP 321',
+        'mac': '0004f2a76e03',
+        'timeout': '5 seconds'
+    }
+    run_unit_test(phone1, phone2)
+
     
 
