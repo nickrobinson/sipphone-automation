@@ -209,7 +209,7 @@ class PhoneKeywords(object):
         self._send_request(extension, URL)
     
     def mute_mic(self, extension):
-        """DEPRECATED"""
+        """*DEPRECATED* Use keyword `Press Mute` instead"""
         self.press_mute(extension)
 
     def press_line_key(self, extension, lineNumber):
