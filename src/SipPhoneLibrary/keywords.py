@@ -174,29 +174,30 @@ class PhoneKeywords(object):
         """This function should check that the phone with the provided extension is 
         currently in a connected call"""
         self._send_poll(extension)
-        node = self.root.getElementsByTagName('CallState')
-        if node[0].nodeValue != 'Connected':
+        node = self.root.getElementsByTagName('CallState')[0]
+        if node.childNodes[0].data != 'Connected':
             self.builtin.fail("Phone call is not currently connected")
     
     def expect_ringback(self, extension):
         """Check to make sure that the phone with the specified extension is hearing ringback"""
         self._send_poll(extension)
-        if self.root[0][3][1].text != 'RingBack':
-            self.builtin.fail("Phone is not currently hearing ringback")
+	node = self.root.getElementsByTagName('CallState')[0]
+        if node.childNodes[0].data != 'RingBack':
+            self.builtin.fail("Phone call is not currently getting ringback")
 
     def expect_call_hold(self, extension):
         """Check to make sure that the phones call is on hold by the other party"""
         self._send_poll(extension)
-        node = self.root.getElementsByTagName('CallState')
-        if node[0].nodeValue != 'CallHold':
+        node = self.root.getElementsByTagName('CallState')[0]
+        if node.childNodes[0].data != 'CallHold':
             self.builtin.fail("Phone call is not currently on hold by the other party")
 
     def expect_call_held(self, extension):
         """Check to make sure that the phone has placed a call on hold"""
         self._send_poll(extension)
-        node = self.root.getElementsByTagName('CallState')
-        if node[0].nodeValue != 'CallHeld':
-            self.builtin.fail("Phone call is not currently on held by this phone")
+        node = self.root.getElementsByTagName('CallState')[0]
+        if node.childNodes[0].data != 'CallHeld':
+            self.builtin.fail("Phone call is not currently held by this phone")
 
     #def expect_dtmf_digits(self, file, digits):
     #    """Check a wav file and verify that the expected digits are heard in the wav file"""
@@ -208,21 +209,21 @@ class PhoneKeywords(object):
     def expect_caller_id(self, extension, callerid):
         """Check the incoming call caller id for what you expect"""
         self._send_poll(extension)
-        node = self.root.getElementsByTagName('CallingPartyName')
-        if node[0].nodeValue != callerid:
+        node = self.root.getElementsByTagName('CallingPartyName')[0]
+        if node.childNodes[0].data != callerid:
             self.builtin.fail("Current Calling party %s does not match expected caller id: %s"%(node[0].nodeValue, callerid))
     
     def get_phone_mac(self, extension):
         """Returns the MAC address of the extension specified"""
         self._send_poll(extension)
-        node = self.root.getElementsByTagName('MACAddress')
-        return node[0].nodeValue
+        node = self.root.getElementsByTagName('MACAddress')[0]
+        return node.childNodes[0].data
 
     def get_phone_model(self, extension):
         """Returns the model number of the phone with the specified extension"""
         self._send_poll(extension)
-        node = self.root.getElementsByTageName('ModelNumber')
-        return node[0].nodeValue
+        node = self.root.getElementsByTageName('ModelNumber')[0]
+        return node.childNodes[0].data
         
 if __name__ == '__main__':
     #unit test
