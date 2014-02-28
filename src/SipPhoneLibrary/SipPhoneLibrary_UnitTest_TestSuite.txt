@@ -5,15 +5,32 @@ Library           ../SipPhoneLibrary/
 
 *** Variables ***
 ${EXT1}           1001
-${EXT2}           1002
 ${EXT1_IP}        10.17.127.216
+${EXT1_PORT}      8081
+${EXT2}           1002
+${EXT2_IP}        10.17.127.216
+${EXT2_PORT}      8082
 
 *** Test Cases ***
 Example Test Case 1
-    Setup Phone    ${EXT1}    ${EXT1_IP}
+    Setup Phone    ${EXT1}    ${EXT1_IP}    port=${EXT1_PORT}    timeout=5 seconds
+    Setup Phone    ${EXT2}    ${EXT2_IP}    port=${EXT2_PORT}    timeout=5 seconds
+    ${model1}=    Get Phone Model    ${EXT1}
+    Log    ${model1}
+    ${model2}=    Get Phone Model    ${EXT2}
+    Log    ${model2}
+    ${mac1}=    Get Phone Mac    ${EXT1}
+    Log    ${mac1}
+    ${mac2}=    Get Phone Mac    ${EXT2}
+    Log    ${mac2}
     Press Headset Key    ${EXT1}
     ${digits}=    Split String To Characters    ${EXT2}
     : FOR    ${digit}    IN    @{digits}
     \    Press Digit    ${EXT1}    ${digit}
     Sleep    2
     Expect Ringback    ${EXT1}
+    Press Headset Key    ${EXT2}
+    Sleep    1
+    Expect Connected    ${EXT1}
+    Expect Connected    ${EXT2}
+    Press End Call    ${EXT2}

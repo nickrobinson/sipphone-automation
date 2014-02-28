@@ -24,10 +24,9 @@ class Phone(object):
         self.extension = extension
         self.ipaddr = ipaddr
         self.port = port
-        #ToDo: do something with port
-        url = "http://{0}{1}"
-        self.push_url = url.format(self.ipaddr, PUSH_URI)
-        self.poll_call_state_url = url.format(self.ipaddr, POLL_CALL_STATE_URI)
+        url = "http://{0}:{1}{2}"
+        self.push_url = url.format(self.ipaddr, self.port, PUSH_URI)
+        self.poll_call_state_url = url.format(self.ipaddr, self.port, POLL_CALL_STATE_URI)
         self.username = username
         self.password = password
         self.timeout = timeout
@@ -77,6 +76,7 @@ class PhoneKeywords(object):
     def _send_poll(self, extension):
         """This is a helper function that is responsible for getting the current
         callstate from the phone"""
+        self.root = None
         resp = self.phones[extension].send_poll()
         if resp.getcode() != 200:
             self.builtin.fail("Result of Polling the phone for callstate was not OK")
@@ -215,30 +215,62 @@ class PhoneKeywords(object):
     
     def get_phone_mac(self, extension):
         """Returns the MAC address of the extension specified"""
+        phone_mac = ''
         self._send_poll(extension)
-        node = self.root.getElementsByTagName('MACAddress')[0]
-        return node.childNodes[0].data
+        elems = self.root.getElementsByTagName('MACAddress')
+        if len(elems):
+            phone_mac = elems[0].childNodes[0].data
+        return phone_mac
 
     def get_phone_model(self, extension):
         """Returns the model number of the phone with the specified extension"""
+        phone_model = ''
         self._send_poll(extension)
-        node = self.root.getElementsByTageName('ModelNumber')[0]
-        return node.childNodes[0].data
+        elems = self.root.getElementsByTagName('ModelNumber')
+        if len(elems):
+            phone_model = elems[0].childNodes[0].data
+        return phone_model
         
 if __name__ == '__main__':
     #unit test
     import time
     ext1 = '1001'
+    ext1_ip = '10.17.127.216'
+    ext1_port = '8081'
     ext2 = '1002'
+    ext2_ip = '10.17.127.216'
+    ext2_port = '8082'
     lib = PhoneKeywords()
-    lib.setup_phone(ext1, '10.17.127.216', 'admin', 'admin', '80', '5 seconds')
+    
+    #setup
+    lib.setup_phone(ext1, ext1_ip, port=ext1_port, timeout='5 seconds')
+    lib.setup_phone(ext2, ext2_ip, port=ext2_port, timeout='5 seconds')
+    
+    lib._send_poll(ext1)
+    print lib.root.toxml()
+    
+    #phone model
+    model1 = lib.get_phone_model(ext1)
+    print 'model1:', model1
+    model2 = lib.get_phone_model(ext2)
+    print 'model2:', model2
+    
+    #phone mac
+    mac1 = lib.get_phone_mac(ext1)
+    print 'macl1:', mac1
+    mac2 = lib.get_phone_mac(ext2)
+    print 'mac2:', mac2
+    
+    #press digit
     lib.press_headset_key(ext1)
     for digit in ext2:
         lib.press_digit(ext1, digit)
     time.sleep(2)
-    lib.root = None
+    
     lib._send_poll(ext1)
     print lib.root.toxml()
+    
+    #call_state
     call_state = lib.root.getElementsByTagName('CallState')[0].childNodes[0].data
     print 'call_state:', call_state
     assert call_state == 'RingBack'
