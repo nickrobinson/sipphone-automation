@@ -19,9 +19,9 @@ Example Test Case 1
     Log    ${model1}
     ${model2}=    Get Phone Model    ${EXT2}
     Log    ${model2}
-    ${mac1}=    Get Phone Mac    ${EXT1}
+    ${mac1}=    Get Mac    ${EXT1}
     Log    ${mac1}
-    ${mac2}=    Get Phone Mac    ${EXT2}
+    ${mac2}=    Get Mac    ${EXT2}
     Log    ${mac2}
     Press Headset Key    ${EXT1}
     ${digits}=    Split String To Characters    ${EXT2}
