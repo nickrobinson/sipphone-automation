@@ -306,7 +306,7 @@ class PhoneKeywords(object):
         calling_party = ''
         if len(nodes):
             calling_party = nodes[0].childNodes[0].data
-            if calling_party != callerid:
+            if calling_party == callerid:
                 success = True
         if not success:
             self.builtin.fail("Current Calling party ({0}) does not match expected caller id ({1})\nxml:\n{2}" \
