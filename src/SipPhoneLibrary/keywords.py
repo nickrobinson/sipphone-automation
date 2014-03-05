@@ -129,9 +129,18 @@ class PhoneKeywords(object):
         `password` - The phones push URL password
         `timeout` - Timeout for SIP phone API HTTP requests
         """
-        self.phones[extension] = Phone(extension, ipaddr, username, password, \
+        phone = Phone(extension, ipaddr, username, password, \
             port, timeout=utils.timestr_to_secs(timeout))
-        self.builtin.log("Added Phone")
+        self.phones[extension] = phone
+        msg = "Added Phone -\n"
+        msg += "extension: " + phone.extension
+        msg += ", ipaddr: " + phone.ipaddr
+        msg += ", username: " + phone.username
+        msg += ", password: " + phone.password
+        msg += ", timeout: {0}".format(phone.timeout)
+        msg += ", port: " + phone.port
+        msg += ", push_url: " + phone.push_url
+        self.builtin.log(msg)
         
     ##
     # Data Push Request keywords:
@@ -139,19 +148,19 @@ class PhoneKeywords(object):
 
     def call_number(self, extension, number):
         """Have the phone with the provided extension dial the number passed in"""
-        URL = BEGIN_REQUEST + "tel:\\" + number + END_REQUEST
-        self._send_request(extension, URL)
-        self.builtin.log("Called number" + number)
+        xml_string = BEGIN_REQUEST + "tel:\\" + number + END_REQUEST
+        self._send_request(extension, xml_string)
+        self.builtin.log("Called number " + number)
 
     def press_volume_up(self, extension):
         """Increase the volume by 1 unit on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:VolUp" + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:VolUp" + END_REQUEST
+        self._send_request(extension, xml_string)
         
     def press_volume_down(self, extension):
         """Decrease the volume by 1 unit on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:VolDown" + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:VolDown" + END_REQUEST
+        self._send_request(extension, xml_string)
 
     def max_volume(self, extension):
         """Turn up the volume all the way on the phone with the specified extension"""
@@ -165,24 +174,24 @@ class PhoneKeywords(object):
 
     def press_headset_key(self, extension):
         """Press the headset key on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:Headset" + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:Headset" + END_REQUEST
+        self._send_request(extension, xml_string)
         
     def press_handsfree_key(self, extension):
         """Press the headset key on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:Handsfree" + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:Handsfree" + END_REQUEST
+        self._send_request(extension, xml_string)
 
     def press_end_call(self, extension):
         """Press the end call key on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:Softkey2" + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:Softkey2" + END_REQUEST
+        self._send_request(extension, xml_string)
         self.builtin.log("Ended Call")
 
     def press_dnd(self, extension):
         """Press the DoNotDisturb key on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:DoNotDisturb" + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:DoNotDisturb" + END_REQUEST
+        self._send_request(extension, xml_string)
 
     def press_digit(self, extension, digit):
         """Press the specified digit key on the phone with the specified extension"""
@@ -190,23 +199,23 @@ class PhoneKeywords(object):
             digit = "Star"
         elif digit == "#":
             digit = "Pound"
-        URL = BEGIN_REQUEST + "Key:DialPad" + digit + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:DialPad" + digit + END_REQUEST
+        self._send_request(extension, xml_string)
 
     def press_hold(self, extension):
         """Press the hold key on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:Hold" + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:Hold" + END_REQUEST
+        self._send_request(extension, xml_string)
 
     def press_redial(self, extension):
         """Press the redial key on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:Redial" + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:Redial" + END_REQUEST
+        self._send_request(extension, xml_string)
         
     def press_mute(self, extension):
         """Press the mic mute key on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:MicMute" + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:MicMute" + END_REQUEST
+        self._send_request(extension, xml_string)
     
     def mute_mic(self, extension):
         """*DEPRECATED* Use keyword `Press Mute` instead"""
@@ -214,18 +223,18 @@ class PhoneKeywords(object):
 
     def press_line_key(self, extension, lineNumber):
         """Press the specified line key number on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:Line" + lineNumber + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:Line" + lineNumber + END_REQUEST
+        self._send_request(extension, xml_string)
 
     def press_transfer(self, extension):
         """Press the transfer key on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:Transfer" + lineNumber + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:Transfer" + lineNumber + END_REQUEST
+        self._send_request(extension, xml_string)
         
     def press_messages(self, extension):
         """Press the Messages key on the phone with the specified extension"""
-        URL = BEGIN_REQUEST + "Key:Messages" + END_REQUEST
-        self._send_request(extension, URL)
+        xml_string = BEGIN_REQUEST + "Key:Messages" + END_REQUEST
+        self._send_request(extension, xml_string)
         
     ## Call Line Information XML look like this:
     #<PolycomIPPhone>
@@ -252,38 +261,57 @@ class PhoneKeywords(object):
         """This function should check that the phone with the provided extension is 
         currently in a connected call"""
         root = self._poll_call_state(extension)
-        node = root.getElementsByTagName('CallState')[0]
-        if node.childNodes[0].data != 'Connected':
-            self.builtin.fail("Phone call is not currently connected")
+        nodes = root.getElementsByTagName('CallState')
+        if len(nodes) and nodes[0].childNodes[0].data == 'Connected':
+            pass
+        else:
+            self.builtin.fail("Phone call is not currently connected\nxml:\n{0}" \
+                .format(root.toxml()))
     
     def expect_ringback(self, extension):
         """Check to make sure that the phone with the specified extension is hearing ringback"""
         root = self._poll_call_state(extension)
-        node = root.getElementsByTagName('CallState')[0]
-        if node.childNodes[0].data != 'RingBack':
-            self.builtin.fail("Phone call is not currently getting ringback")
+        nodes = root.getElementsByTagName('CallState')
+        if len(nodes) and nodes[0].childNodes[0].data == 'RingBack':
+            pass
+        else:
+            self.builtin.fail("Phone call is not currently getting ringback\nxml:\n{0}" \
+                .format(root.toxml()))
 
     def expect_call_hold(self, extension):
         """Check to make sure that the phones call is on hold by the other party"""
         root = self._poll_call_state(extension)
-        node = root.getElementsByTagName('CallState')[0]
-        if node.childNodes[0].data != 'CallHold':
-            self.builtin.fail("Phone call is not currently on hold by the other party")
+        nodes = root.getElementsByTagName('CallState')
+        if len(nodes) and nodes[0].childNodes[0].data == 'CallHold':
+            pass
+        else:
+            self.builtin.fail("Phone call is not currently on hold by the other party\nxml:\n{0}" \
+                .format(root.toxml()))
 
     def expect_call_held(self, extension):
         """Check to make sure that the phone has placed a call on hold"""
         root = self._poll_call_state(extension)
-        node = root.getElementsByTagName('CallState')[0]
-        if node.childNodes[0].data != 'CallHeld':
-            self.builtin.fail("Phone call is not currently held by this phone")
+        nodes = root.getElementsByTagName('CallState')
+        if len(nodes) and nodes[0].childNodes[0].data == 'CallHeld':
+            pass
+        else:
+            self.builtin.fail("Phone call is not currently held by this phone\nxml:\n{0}" \
+                .format(root.toxml()))
 
     def expect_caller_id(self, extension, callerid):
         """Check the incoming call caller id for what you expect"""
+        success = False
         root = self._poll_call_state(extension)
-        node = root.getElementsByTagName('CallingPartyName')[0]
-        if node.childNodes[0].data != callerid:
-            self.builtin.fail("Current Calling party %s does not match expected caller id: %s"%(node[0].nodeValue, callerid))
-            
+        nodes = root.getElementsByTagName('CallingPartyName')
+        calling_party = ''
+        if len(nodes):
+            calling_party = nodes[0].childNodes[0].data
+            if calling_party != callerid:
+                success = True
+        if not success:
+            self.builtin.fail("Current Calling party ({0}) does not match expected caller id ({1})\nxml:\n{2}" \
+                .format(calling_party, callerid, root.toxml()))
+    
     ## Device Information XML look like this:
     #<PolycomIPPhone>
     #<DeviceInformation>
@@ -301,18 +329,18 @@ class PhoneKeywords(object):
         """Returns the MAC address of the extension specified"""
         phone_mac = ''
         root = self._poll_device_info(extension)
-        elems = root.getElementsByTagName('MACAddress')
-        if len(elems):
-            phone_mac = elems[0].childNodes[0].data
+        nodes = root.getElementsByTagName('MACAddress')
+        if len(nodes):
+            phone_mac = nodes[0].childNodes[0].data
         return phone_mac
 
     def get_phone_model(self, extension):
         """Returns the model number of the phone with the specified extension"""
         phone_model = ''
         root = self._poll_device_info(extension)
-        elems = root.getElementsByTagName('ModelNumber')
-        if len(elems):
-            phone_model = elems[0].childNodes[0].data
+        nodes = root.getElementsByTagName('ModelNumber')
+        if len(nodes):
+            phone_model = nodes[0].childNodes[0].data
         return phone_model
         
     ## Network Information XML look like this:
@@ -337,27 +365,27 @@ class PhoneKeywords(object):
         """Returns the IP address of the phone with the specified extension"""
         ip_addr = ''
         root = self._poll_network_info(extension)
-        elems = root.getElementsByTagName('IPAddress')
-        if len(elems):
-            ip_addr = elems[0].childNodes[0].data
+        nodes = root.getElementsByTagName('IPAddress')
+        if len(nodes):
+            ip_addr = nodes[0].childNodes[0].data
         return ip_addr
         
     def get_prov_server(self, extension):
         """Returns the provisioning server of the phone with the specified extension"""
         prov_server = ''
         root = self._poll_network_info(extension)
-        elems = root.getElementsByTagName('ProvServer')
-        if len(elems):
-            prov_server = elems[0].childNodes[0].data
+        nodes = root.getElementsByTagName('ProvServer')
+        if len(nodes):
+            prov_server = nodes[0].childNodes[0].data
         return prov_server
         
     def get_dhcp_enabled(self, extension):
         """Returns True if DHCP is enabled on the phone with the specified extension"""
         dhcp_enabled = ''
         root = self._poll_network_info(extension)
-        elems = root.getElementsByTagName('DHCPEnabled')
-        if len(elems):
-            dhcp_enabled = elems[0].childNodes[0].data
+        nodes = root.getElementsByTagName('DHCPEnabled')
+        if len(nodes):
+            dhcp_enabled = nodes[0].childNodes[0].data
         return dhcp_enabled == 'Yes'
     
     def expect_dhcp_enabled(self, extension):
@@ -445,6 +473,7 @@ def run_unit_test(phone1, phone2):
     #call_state
     call_state = root.getElementsByTagName('CallState')[0].childNodes[0].data
     assert call_state == 'RingBack'
+    lib.expect_ringback(ext1)
 
     root = lib._poll_device_info(ext1)
     print 'device_info1:'
@@ -453,9 +482,13 @@ def run_unit_test(phone1, phone2):
     root = lib._poll_network_info(ext1)
     print 'network_info1:'
     print root.toxml()
-    
-    lib.press_end_call(ext2)
 
+    #answer    
+    lib.press_headset_key(ext2)
+
+
+    #hang up
+    lib.press_headset_key(ext2)
 
 if __name__ == '__main__':
     phone1 = {
