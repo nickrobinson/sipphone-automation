@@ -261,7 +261,6 @@ class PhoneKeywords(object):
         """This function should check that the phone with the provided extension is 
         currently in a connected call"""
         root = self._poll_call_state(extension)
-        self.builtin.log("Expect Connected. xml: {0}".format(root.toxml()))
         nodes = root.getElementsByTagName('CallState')
         if len(nodes) and nodes[0].childNodes[0].data == 'Connected':
             pass
