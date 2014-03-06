@@ -233,7 +233,7 @@ class PhoneKeywords(object):
 
     def press_transfer(self, extension):
         """Press the transfer key on the phone with the specified extension"""
-        xml_string = BEGIN_REQUEST + "Key:Transfer" + line_number + END_REQUEST
+        xml_string = BEGIN_REQUEST + "Key:Transfer" + END_REQUEST
         self._send_request(extension, xml_string)
         
     def press_messages(self, extension):
