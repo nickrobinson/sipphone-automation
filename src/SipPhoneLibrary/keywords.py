@@ -152,6 +152,12 @@ class PhoneKeywords(object):
         self._send_request(extension, xml_string)
         self.builtin.log("Called number " + number)
 
+    def play_audiofile(self, extension, audiofile_path):
+        """Download and play the audio file. 
+        (See Web App Developer's Guide for Polycom Phones page 21 for more info)"""
+        xml_string = BEGIN_REQUEST + "Play:" + audiofile_path + END_REQUEST
+        self._send_request(extension, xml_string)
+
     def press_volume_up(self, extension):
         """Increase the volume by 1 unit on the phone with the specified extension"""
         xml_string = BEGIN_REQUEST + "Key:VolUp" + END_REQUEST
@@ -240,7 +246,7 @@ class PhoneKeywords(object):
         """Press the Messages key on the phone with the specified extension"""
         xml_string = BEGIN_REQUEST + "Key:Messages" + END_REQUEST
         self._send_request(extension, xml_string)
-        
+                
     ## Call Line Information XML look like this:
     #<PolycomIPPhone>
     #<CallLineInfo>
