@@ -152,6 +152,12 @@ class PhoneKeywords(object):
         self._send_request(extension, xml_string)
         self.builtin.log("Called number " + number)
 
+    def play_audiofile(self, extension, audiofile_path):
+        """Download and play the audio file. 
+        (See Web App Developer's Guide for Polycom Phones page 21 for more info)"""
+        xml_string = BEGIN_REQUEST + "Play:" + audiofile_path + END_REQUEST
+        self._send_request(extension, xml_string)
+
     def press_volume_up(self, extension):
         """Increase the volume by 1 unit on the phone with the specified extension"""
         xml_string = BEGIN_REQUEST + "Key:VolUp" + END_REQUEST
@@ -183,10 +189,15 @@ class PhoneKeywords(object):
         self._send_request(extension, xml_string)
 
     def press_end_call(self, extension):
-        """Press the end call key on the phone with the specified extension"""
-        xml_string = BEGIN_REQUEST + "Key:Softkey2" + END_REQUEST
+        """Press the end call key on the phone with the specified extension.
+        Note: This keyword only works on certain phones, do not use."""
+        self.press_softkey(extension, 2)
+
+    def press_softkey(self, extension, softkey_number):
+        """Press the specified softkey. Note: The function of the softkey is dependent
+        on the phone configuration. Valid range varies per phone, 1-5 is typical."""
+        xml_string = BEGIN_REQUEST + "Key:Softkey{0}".format(softkey_number) + END_REQUEST
         self._send_request(extension, xml_string)
-        self.builtin.log("Ended Call")
 
     def press_dnd(self, extension):
         """Press the DoNotDisturb key on the phone with the specified extension"""
@@ -221,21 +232,21 @@ class PhoneKeywords(object):
         """*DEPRECATED* Use keyword `Press Mute` instead"""
         self.press_mute(extension)
 
-    def press_line_key(self, extension, lineNumber):
+    def press_line_key(self, extension, line_number):
         """Press the specified line key number on the phone with the specified extension"""
-        xml_string = BEGIN_REQUEST + "Key:Line" + lineNumber + END_REQUEST
+        xml_string = BEGIN_REQUEST + "Key:Line{0}".format(line_number) + END_REQUEST
         self._send_request(extension, xml_string)
 
     def press_transfer(self, extension):
         """Press the transfer key on the phone with the specified extension"""
-        xml_string = BEGIN_REQUEST + "Key:Transfer" + lineNumber + END_REQUEST
+        xml_string = BEGIN_REQUEST + "Key:Transfer" + END_REQUEST
         self._send_request(extension, xml_string)
         
     def press_messages(self, extension):
         """Press the Messages key on the phone with the specified extension"""
         xml_string = BEGIN_REQUEST + "Key:Messages" + END_REQUEST
         self._send_request(extension, xml_string)
-        
+                
     ## Call Line Information XML look like this:
     #<PolycomIPPhone>
     #<CallLineInfo>
