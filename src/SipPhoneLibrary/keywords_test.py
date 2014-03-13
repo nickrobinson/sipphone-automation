@@ -63,7 +63,7 @@ class TestKeywordsWithTwoPhones(unittest.TestCase):
         self.lib.press_headset_key(self.ext1)
         for digit in self.ext2:
             self.lib.press_digit(self.ext1, digit)
-        time.sleep(2)
+        time.sleep(3)
         
         root = self.lib._poll_call_state(self.ext1)
         print 'call_state1:'
