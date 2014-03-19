@@ -3,6 +3,7 @@ import unittest
 import keywords
 import time
 from keywords_test_parameters import *
+from urllib2 import URLError
 
 class TestKeywordsWithTwoPhones(unittest.TestCase):
     """Test Case which requires two phones."""
@@ -15,7 +16,7 @@ class TestKeywordsWithTwoPhones(unittest.TestCase):
         self.ext2 = phone2['extension']
         self.lib.setup_phone(self.ext1, phone1['ipaddr'], port=phone1['port'], timeout=phone1['timeout'])
         self.lib.setup_phone(self.ext2, phone2['ipaddr'], port=phone2['port'], timeout=phone2['timeout'])
-        
+                
     def test_press_volume_down(self):
         #volume
         self.lib.press_volume_down(self.ext1)
@@ -144,8 +145,7 @@ class TestKeywordsWithTwoPhones(unittest.TestCase):
 
     def test_call_scenario_3(self):
         #test end_all_calls
-        self.lib.end_all_calls(self.ext1)
-        self.lib.end_all_calls(self.ext2)
+        self.lib.end_all_calls()
         
         #verify that line 1 is inactive
         line_state = self.lib.get_line_state(self.ext1)
@@ -178,6 +178,40 @@ class TestKeywordsWithTwoPhones(unittest.TestCase):
         #test expect_idle
         self.lib.expect_idle(self.ext1)
         self.lib.expect_idle(self.ext2)
+        
+class TestKeywordsWithUnreachablePhone(unittest.TestCase):
+    def setUp(self):
+        #init library
+        self.lib = keywords.PhoneKeywords()
+        
+    def test_unreachable_phone(self):
+        #setup a bogus phone
+        self.lib.setup_phone('0000', 'www.not-used.com', port=999, timeout='1 seconds')
+        self.lib.setup_phone('0001', 'www.not-used.com', port=999, timeout='1 seconds')
+        
+        for ext, phone in self.lib.phones.items():
+            self.assertFalse(phone.was_responsive_at_setup)
+        
+        with self.assertRaises(URLError):
+            self.lib.expect_idle('0000')
+            
+        self.lib.end_all_calls()
 
 if __name__ == '__main__':
-    unittest.main()
+    test_classes_to_run = []
+    test_classes_to_run.append(TestKeywordsWithTwoPhones)
+    test_classes_to_run.append(TestKeywordsWithUnreachablePhone)
+
+    loader = unittest.TestLoader()
+
+    suites_list = []
+    for test_class in test_classes_to_run:
+        suite = loader.loadTestsFromTestCase(test_class)
+        suites_list.append(suite)
+
+    big_suite = unittest.TestSuite(suites_list)
+
+    runner = unittest.TextTestRunner()
+    results = runner.run(big_suite)
+    
+    
