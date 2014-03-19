@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import urllib2
 from xml.dom.minidom import parse, parseString
+import time
+
 #from DTMFDetector import *
 
 import robot
@@ -74,6 +76,10 @@ class PhoneKeywords(object):
         self.phones = {}
         self.builtin = BuiltIn()
         self.timeout = DEFAULT_TIMEOUT
+        
+    ##
+    # "Private" utility methods:
+    ##
 
     def _send_request(self, extension, xml_string):
         """This is a helper function that is responsible for sending the push 
@@ -114,6 +120,29 @@ class PhoneKeywords(object):
         else:
             root = parseString(resp.read())
         return root
+        
+    def _get_active_line_and_call_counts(self, extension):
+        """Utility function to get the number of lines which are not "Inactive" and
+        the number of CallInfo blocks in the call state XML"""
+        active_lines = 0
+        active_calls = 0
+        root = self._poll_call_state(extension)
+        call_line_infos = root.getElementsByTagName('CallLineInfo')
+        for call_line_info in call_line_infos:
+            nodes = call_line_info.getElementsByTagName('LineState')
+            if len(nodes) and nodes[0].childNodes[0].data != 'Inactive':
+                active_lines += 1
+        call_infos = root.getElementsByTagName('CallInfo')
+        active_calls += len(call_infos)
+        return (active_lines, active_calls)
+        
+    def _get_end_call_softkey_number(self, extension):
+        """Utility function to get the End Call softkey number, based on the phone model"""
+        phone_model = self.get_phone_model(extension)
+        end_call_softkey_number = 2 # VVX ?
+        if phone_model == 'SoundPoint IP 321':
+            end_call_softkey_number = 1
+        return end_call_softkey_number
             
     ##
     # Library Keywords:
@@ -189,10 +218,28 @@ class PhoneKeywords(object):
         self._send_request(extension, xml_string)
 
     def press_end_call(self, extension):
-        """Press the end call key on the phone with the specified extension.
-        Note: This keyword only works on certain phones, do not use."""
-        self.press_softkey(extension, 2)
-
+        """Press the 'End Call' softkey on the phone with the specified extension."""
+        self.press_softkey(extension, self._get_end_call_softkey_number(extension))
+    
+    def end_all_calls(self, extension):
+        """End all calls and put the phone onhook by pressing the end call softkey 
+        until there are no CallInfo blocks in the call state XML and the LineState 
+        is 'Inactive' on every line. This keyword is meant to be used by the teardown 
+        routine of each test case."""
+        MAX_ATTEMPTS = 10
+        success = False
+        for i in range(MAX_ATTEMPTS):
+            active_lines, active_calls = self._get_active_line_and_call_counts(extension)
+            if active_lines == 0 and active_calls == 0:
+                success = True
+                break
+            else:
+                #try to clear the line(s) and/or call(s)
+                self.press_softkey(extension, self._get_end_call_softkey_number(extension))
+                time.sleep(0.5)
+        if not success:
+            self.builtin.fail("Failed to reset phone (ext {0})".format(extension))
+    
     def press_softkey(self, extension, softkey_number):
         """Press the specified softkey. Note: The function of the softkey is dependent
         on the phone configuration. Valid range varies per phone, 1-5 is typical."""
@@ -267,6 +314,28 @@ class PhoneKeywords(object):
     #</CallLineInfo>
     #</PolycomIPPhone>
     ## Call Line Information keywords:
+
+    def get_line_state(self, extension, line='1'):
+        """Gets the line state for the specified line.
+        Possible values: 'Inactive' or 'Active'."""
+        line_state = ''
+        root = self._poll_call_state(extension)
+        call_line_infos = root.getElementsByTagName('CallLineInfo')
+        for call_line_info in call_line_infos:
+            nodes = call_line_info.getElementsByTagName('LineKeyNum')
+            if len(nodes) and nodes[0].childNodes[0].data == str(line):
+                nodes = call_line_info.getElementsByTagName('LineState')
+                if len(nodes):
+                    line_state = nodes[0].childNodes[0].data
+        return line_state
+        
+    def expect_idle(self, extension):
+        """This function should check that the phone with the provided extension is
+        currently idle (no calls, line state of every line is 'Inactive')"""
+        active_lines, active_calls = self._get_active_line_and_call_counts(extension)
+        if active_lines != 0 or active_calls != 0:
+            self.builtin.fail("Phone is not currently idle. active_lines={0} active_calls={0}" \
+                .format(active_lines, active_calls))
 
     def expect_connected(self, extension):
         """This function should check that the phone with the provided extension is 

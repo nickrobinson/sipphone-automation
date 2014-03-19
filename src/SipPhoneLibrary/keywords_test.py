@@ -59,15 +59,29 @@ class TestKeywordsWithTwoPhones(unittest.TestCase):
         print 'prov_server2:', prov_server2
         
     def test_call_scenario_1(self):
+        #verify that line 1 is inactive
+        line_state = self.lib.get_line_state(self.ext1)
+        self.assertEqual(line_state, "Inactive")
+        line_state = self.lib.get_line_state(self.ext2)
+        self.assertEqual(line_state, "Inactive")
+        
         #press digit
         self.lib.press_headset_key(self.ext1)
         for digit in self.ext2:
             self.lib.press_digit(self.ext1, digit)
-        time.sleep(2)
+        time.sleep(3)
+        #answer
+        self.lib.press_headset_key(self.ext2)
         
         root = self.lib._poll_call_state(self.ext1)
         print 'call_state1:'
         print root.toxml()
+        
+        #verify that line is active
+        line_state = self.lib.get_line_state(self.ext1)
+        self.assertEqual(line_state, "Active")
+        line_state = self.lib.get_line_state(self.ext2)
+        self.assertEqual(line_state, "Active")
         
         #call_state
         call_state = root.getElementsByTagName('CallState')[0].childNodes[0].data
@@ -82,11 +96,88 @@ class TestKeywordsWithTwoPhones(unittest.TestCase):
         print 'network_info1:'
         print root.toxml()
 
-        #answer    
-        self.lib.press_headset_key(self.ext2)
-
         #hang up
         self.lib.press_headset_key(self.ext2)
+        
+        time.sleep(2)
+        
+        #verify that line 1 is inactive
+        line_state = self.lib.get_line_state(self.ext1)
+        self.assertEqual(line_state, "Inactive")
+        line_state = self.lib.get_line_state(self.ext2)
+        self.assertEqual(line_state, "Inactive")
+        
+    def test_call_scenario_2(self):
+        #verify that line 1 is inactive
+        line_state = self.lib.get_line_state(self.ext1)
+        self.assertEqual(line_state, "Inactive")
+        line_state = self.lib.get_line_state(self.ext2)
+        self.assertEqual(line_state, "Inactive")
+        
+        #press digit
+        self.lib.press_headset_key(self.ext1)
+        for digit in self.ext2:
+            self.lib.press_digit(self.ext1, digit)
+        time.sleep(3)
+        #answer
+        self.lib.press_headset_key(self.ext2)
+        
+        #verify that line is active
+        line_state = self.lib.get_line_state(self.ext1)
+        self.assertEqual(line_state, "Active")
+        line_state = self.lib.get_line_state(self.ext2)
+        self.assertEqual(line_state, "Active")
+        
+        #test end_all_calls
+        self.lib.end_all_calls(self.ext1)
+        self.lib.end_all_calls(self.ext2)
+        
+        #verify that line 1 is inactive
+        line_state = self.lib.get_line_state(self.ext1)
+        self.assertEqual(line_state, "Inactive")
+        line_state = self.lib.get_line_state(self.ext2)
+        self.assertEqual(line_state, "Inactive")
+        
+        #test expect_idle
+        self.lib.expect_idle(self.ext1)
+        self.lib.expect_idle(self.ext2)
+
+    def test_call_scenario_3(self):
+        #test end_all_calls
+        self.lib.end_all_calls(self.ext1)
+        self.lib.end_all_calls(self.ext2)
+        
+        #verify that line 1 is inactive
+        line_state = self.lib.get_line_state(self.ext1)
+        self.assertEqual(line_state, "Inactive")
+        line_state = self.lib.get_line_state(self.ext2)
+        self.assertEqual(line_state, "Inactive")
+        
+        #press digit
+        self.lib.call_number(self.ext1, self.ext2)
+        time.sleep(2)
+        #answer
+        self.lib.press_handsfree_key(self.ext2)
+        
+        #verify that line is active
+        line_state = self.lib.get_line_state(self.ext1)
+        self.assertEqual(line_state, "Active")
+        line_state = self.lib.get_line_state(self.ext2)
+        self.assertEqual(line_state, "Active")
+        
+        #test press_end_call
+        self.lib.press_end_call(self.ext1)
+        time.sleep(1)
+        
+        #verify that line 1 is inactive
+        line_state = self.lib.get_line_state(self.ext1)
+        self.assertEqual(line_state, "Inactive")
+        line_state = self.lib.get_line_state(self.ext2)
+        self.assertEqual(line_state, "Inactive")
+        
+        #test expect_idle
+        self.lib.expect_idle(self.ext1)
+        self.lib.expect_idle(self.ext2)
 
 if __name__ == '__main__':
     unittest.main()
