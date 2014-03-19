@@ -263,11 +263,12 @@ class PhoneKeywords(object):
                 if phone.was_responsive_at_setup:
                     self._end_all_calls(extension)
                     time.sleep(DEFAULT_DELAY)
-                #don't worry about ending calls for phones that were not responsive at setup.
+                #Don't worry about ending calls for phones that were not responsive at setup.
                 #because those phones won't have any active calls anyway.
-                #Reasoning: Users should be able to "Setup" phones that don't actually exist,
-                #doing so should not cause any test failures, only "Expect ..." keywords should
-                #cause test failures.
+                #Users should be able to "Setup" phones that don't actually exist,
+                #doing so should not cause any test failures. "Setup Phone" and "End All Calls"
+                #should never cause test failures, since they are meant to be used in test 
+                #setups and teardowns, not in test cases.
         else:
             self._end_all_calls(extension)
             
