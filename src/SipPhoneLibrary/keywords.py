@@ -19,6 +19,7 @@ DEFAULT_USERNAME = 'admin'
 DEFAULT_PASSWORD = 'admin'
 DEFAULT_PORT = 80
 DEFAULT_TIMEOUT = 10 #seconds
+DEFAULT_DELAY = 0.5 #seconds
 
 class Phone(object):
     def __init__(self, extension, ipaddr, \
@@ -37,6 +38,17 @@ class Phone(object):
         self.password = password
         self.timeout = timeout
         self.headers = {'Content-Type': 'application/x-com-polycom-spipx'}
+        #determine if phone is reponsive (used by End All Calls)
+        self.was_responsive_at_setup = False
+        try:
+            resp = self.poll_device_info()
+            if resp.getcode() == 200:
+                self.was_responsive_at_setup = True
+            else:
+                print 'WARNING: Phone (ext {0}) response ({1}) is not success'\
+                    .format(self.extension, resp.getcode())
+        except urllib2.URLError:
+            print 'WARNING: Phone (ext {0}) is not responsive'.format(self.extension)
         
     def _digest_auth(self, url):
         pwmgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
@@ -143,7 +155,26 @@ class PhoneKeywords(object):
         if phone_model == 'SoundPoint IP 321':
             end_call_softkey_number = 1
         return end_call_softkey_number
-            
+        
+    def _end_all_calls(self, extension):
+        """End all calls and put the phone onhook by pressing the end call softkey 
+        until there are no CallInfo blocks in the call state XML and the LineState 
+        is 'Inactive' on every line. This keyword is meant to be used by the teardown 
+        routine of each test case."""
+        MAX_ATTEMPTS = 10
+        success = False
+        for i in range(MAX_ATTEMPTS):
+            active_lines, active_calls = self._get_active_line_and_call_counts(extension)
+            if active_lines == 0 and active_calls == 0:
+                success = True
+                break
+            else:
+                #try to clear the line(s) and/or call(s)
+                self.press_softkey(extension, self._get_end_call_softkey_number(extension))
+                time.sleep(DEFAULT_DELAY)
+        if not success:
+            self.builtin.fail("Failed to reset phone (ext {0})".format(extension))
+        
     ##
     # Library Keywords:
     ##
@@ -167,7 +198,7 @@ class PhoneKeywords(object):
         msg += ", username: " + phone.username
         msg += ", password: " + phone.password
         msg += ", timeout: {0}".format(phone.timeout)
-        msg += ", port: " + phone.port
+        msg += ", port: {0}".format(phone.port)
         msg += ", push_url: " + phone.push_url
         self.builtin.log(msg)
         
@@ -221,25 +252,25 @@ class PhoneKeywords(object):
         """Press the 'End Call' softkey on the phone with the specified extension."""
         self.press_softkey(extension, self._get_end_call_softkey_number(extension))
     
-    def end_all_calls(self, extension):
+    def end_all_calls(self, extension='*'):
         """End all calls and put the phone onhook by pressing the end call softkey 
         until there are no CallInfo blocks in the call state XML and the LineState 
         is 'Inactive' on every line. This keyword is meant to be used by the teardown 
-        routine of each test case."""
-        MAX_ATTEMPTS = 10
-        success = False
-        for i in range(MAX_ATTEMPTS):
-            active_lines, active_calls = self._get_active_line_and_call_counts(extension)
-            if active_lines == 0 and active_calls == 0:
-                success = True
-                break
-            else:
-                #try to clear the line(s) and/or call(s)
-                self.press_softkey(extension, self._get_end_call_softkey_number(extension))
-                time.sleep(0.5)
-        if not success:
-            self.builtin.fail("Failed to reset phone (ext {0})".format(extension))
-    
+        routine of each test case.
+        extension: '*' (default) means end all calls on all responsive phones."""
+        if extension == '*':
+            for extension, phone in self.phones.items():
+                if phone.was_responsive_at_setup:
+                    self._end_all_calls(extension)
+                    time.sleep(DEFAULT_DELAY)
+                #don't worry about ending calls for phones that were not responsive at setup.
+                #because those phones won't have any active calls anyway.
+                #Reasoning: Users should be able to "Setup" phones that don't actually exist,
+                #doing so should not cause any test failures, only "Expect ..." keywords should
+                #cause test failures.
+        else:
+            self._end_all_calls(extension)
+            
     def press_softkey(self, extension, softkey_number):
         """Press the specified softkey. Note: The function of the softkey is dependent
         on the phone configuration. Valid range varies per phone, 1-5 is typical."""
