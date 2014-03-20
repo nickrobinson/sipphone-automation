@@ -455,6 +455,18 @@ class PhoneKeywords(object):
             phone_model = nodes[0].childNodes[0].data
         return phone_model
         
+    def get_registered_lines(self, extension):
+        """Returns a dictionary of all registered lines and their directory numbers.
+        For example: {'Line1:'2565550061', 'Line2':'2565550062'} """
+        reg = {}
+        root = self._poll_device_info(extension)
+        nodes = root.getElementsByTagName('PhoneDN')
+        if len(nodes):
+            phone_dn = nodes[0].childNodes[0].data.strip()
+            if phone_dn != '':
+                reg = dict(i.split(':') for i in phone_dn.split(','))
+        return reg
+        
     ## Network Information XML look like this:
     #<PolycomIPPhone>
     #<NetworkConfiguration>
