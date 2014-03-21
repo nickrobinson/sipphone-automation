@@ -289,7 +289,7 @@ class PhoneKeywords(object):
             digit = "Star"
         elif digit == "#":
             digit = "Pound"
-        xml_string = BEGIN_REQUEST + "Key:DialPad" + digit + END_REQUEST
+        xml_string = BEGIN_REQUEST + "Key:DialPad{0}".format(digit) + END_REQUEST
         self._send_request(extension, xml_string)
 
     def press_hold(self, extension):
