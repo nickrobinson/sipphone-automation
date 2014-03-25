@@ -12,10 +12,10 @@ class TestKeywordsWithTwoPhones(unittest.TestCase):
         self.lib = keywords.PhoneKeywords()
         
         #setup
-        self.ext1 = phone1['extension']
-        self.ext2 = phone2['extension']
-        self.lib.setup_phone(self.ext1, phone1['ipaddr'], port=phone1['port'], timeout=phone1['timeout'])
-        self.lib.setup_phone(self.ext2, phone2['ipaddr'], port=phone2['port'], timeout=phone2['timeout'])
+        self.ext1 = EXT1
+        self.ext2 = EXT2
+        self.lib.setup_phone(self.ext1, EXT1_IP, port=EXT1_PORT, timeout=EXT1_TIMEOUT)
+        self.lib.setup_phone(self.ext2, EXT2_IP, port=EXT2_PORT, timeout=EXT2_TIMEOUT)
                 
     def test_press_volume_down(self):
         #volume
@@ -31,16 +31,16 @@ class TestKeywordsWithTwoPhones(unittest.TestCase):
     def test_get_phone_model(self):
         #phone model
         model1 = self.lib.get_phone_model(self.ext1)
-        self.assertTrue(model1 == phone1['model'])
+        self.assertTrue(model1 == EXT1_MODEL)
         model2 = self.lib.get_phone_model(self.ext2)
-        self.assertTrue(model2 == phone2['model'])
+        self.assertTrue(model2 == EXT2_MODEL)
         
     def test_get_phone_mac(self):
         #phone mac
         mac1 = self.lib.get_mac(self.ext1)
-        assert mac1 == phone1['mac']
+        assert mac1 == EXT1_MAC
         mac2 = self.lib.get_mac(self.ext2)
-        self.assertTrue(mac2 == phone2['mac'])
+        self.assertTrue(mac2 == EXT2_MAC)
         
     def test_get_ip_addr(self):
         #phone ip addr
@@ -58,6 +58,13 @@ class TestKeywordsWithTwoPhones(unittest.TestCase):
         print 'prov_server1:', prov_server1
         prov_server2 = self.lib.get_prov_server(self.ext2)
         print 'prov_server2:', prov_server2
+        
+    def test_registrations(self):
+        reg = self.lib.get_registered_lines(self.ext1)
+        self.assertTrue(type(reg) is dict)
+        self.assertEqual(len(reg), 1)
+        self.assertTrue('Line1' in reg)
+        self.assertEqual(reg['Line1'], self.ext1)
         
     def test_call_scenario_1(self):
         #verify that line 1 is inactive

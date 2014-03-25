@@ -1,16 +1,13 @@
-phone1 = {
-    'extension': '1001',
-    'ipaddr': '10.17.127.216',
-    'port': '8081',
-    'model': 'SoundPoint IP 321',
-    'mac': '0004f2a76cd5',
-    'timeout': '5 seconds'
-}
-phone2 = {
-    'extension': '1002',
-    'ipaddr': '10.17.127.216',
-    'port': '8082',
-    'model': 'SoundPoint IP 321',
-    'mac': '0004f2a76e03',
-    'timeout': '5 seconds'
-}
+EXT1 = '2565557051'
+EXT1_IP = '10.17.127.249'
+EXT1_PORT = '8081'
+EXT1_MODEL = 'SoundPoint IP 321'
+EXT1_MAC = '0004f2a76cd5'
+EXT1_TIMEOUT = '5 seconds'
+
+EXT2 = '2565557052'
+EXT2_IP = '10.17.127.249'
+EXT2_PORT = '8082'
+EXT2_MODEL = 'SoundPoint IP 321'
+EXT2_MAC = '0004f2a76e03'
+EXT2_TIMEOUT = '5 seconds'
