@@ -26,7 +26,7 @@ Below is a better example of this
 </localcfg>
 ```
 
-Polycom Documentation is available [here](http://www.polycom.com/content/dam/polycom/common/documents/guides/spip-ssip-vvx-developers-qrg-enus.pdf)
+Polycom Documentation is available [here](https://gildasioaraujo.files.wordpress.com/2015/08/spip-ssip-vvx-developers-qrg-enus.pdf)
 
 ## Installation
 This library has been added to the PyPi package system. Installation is as simple as entering the command below
